@@ -69,6 +69,32 @@ export async function getTodayCommits(owner: string, repo: string): Promise<GitH
   return res.json();
 }
 
+export interface GitHubRepo {
+  name: string;
+  full_name: string;
+  description: string | null;
+  html_url: string;
+  stargazers_count: number;
+  language: string | null;
+  updated_at: string;
+  private: boolean;
+}
+
+// GitHub 유저의 public 레포 목록 조회
+export async function getUserRepos(username: string): Promise<GitHubRepo[]> {
+  const res = await fetch(
+    `https://api.github.com/users/${username}/repos?per_page=100&sort=updated`,
+    { headers: githubHeaders(), next: { revalidate: 60 } }
+  );
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({})) as { message?: string };
+    throw new Error(error.message || `GitHub API 오류: ${res.status}`);
+  }
+
+  return res.json();
+}
+
 // 특정 커밋의 파일 diff 상세 조회
 export async function getCommitDetail(owner: string, repo: string, sha: string): Promise<CommitDetail> {
   const res = await fetch(
