@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import type { CommitDetail } from './github';
+import type { GitHubDto } from '@/services/github/dto/github.dto';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '');
 
@@ -22,7 +22,7 @@ export async function listAvailableModels(): Promise<string[]> {
 
 export async function analyzeDailyWork(
   repo: string,
-  commits: CommitDetail[],
+  commits: GitHubDto.CommitDetail[],
   modelId = 'models/gemini-2.5-flash'
 ): Promise<string> {
   if (commits.length === 0) {
@@ -33,7 +33,7 @@ export async function analyzeDailyWork(
     const message = c.commit.message.split('\n')[0];
     const date = c.commit.author?.date ?? '';
     const files = c.files
-      .map((f) => {
+      .map((f: GitHubDto.CommitFile) => {
         const patch = f.patch ? f.patch.slice(0, 3000) : '(바이너리 또는 너무 큰 파일)';
         return `  [${f.status}] ${f.filename} (+${f.additions}/-${f.deletions})\n${patch}`;
       })

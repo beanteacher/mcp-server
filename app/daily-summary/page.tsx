@@ -1,5 +1,7 @@
 import Link from 'next/link';
-import { getTodayCommits, getCommitDetail } from '@/lib/github';
+import { BackButton } from '@/components/ui/back-button';
+import { DailySummaryForm } from '@/components/features/daily-summary/daily-summary-form';
+import { getTodayCommits, getCommitDetail } from '@/services/github/github.service';
 import { analyzeDailyWork, listAvailableModels } from '@/lib/gemini';
 
 export const dynamic = 'force-dynamic';
@@ -50,9 +52,7 @@ export default async function DailySummaryPage({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-gray-400 hover:text-gray-600 transition-colors text-sm font-medium">
-            ← 뒤로
-          </Link>
+          <BackButton />
           <h2 className="text-lg font-semibold text-gray-800">오늘의 작업 정리</h2>
         </div>
         <Link
@@ -113,22 +113,7 @@ export default async function DailySummaryPage({
           </div>
 
           {/* 저장소 입력 폼 */}
-          <form method="GET" className="flex gap-2 mb-8">
-            <input type="hidden" name="model" value={selectedModel} />
-            <input
-              type="text"
-              name="repo"
-              defaultValue={targetRepo}
-              placeholder="owner/repo (예: wisecan-github/web-wisecan-oam-back)"
-              className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors whitespace-nowrap"
-            >
-              분석하기
-            </button>
-          </form>
+          <DailySummaryForm selectedModel={selectedModel} />
 
           {!targetRepo && (
             <p className="text-sm text-gray-400 text-center py-12">

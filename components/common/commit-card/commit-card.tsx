@@ -1,4 +1,8 @@
-import type { GitHubCommit } from '../lib/github';
+import type { GitHubDto } from '@/services/github/dto/github.dto';
+
+interface CommitCardProps {
+  commit: GitHubDto.Commit;
+}
 
 function relativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -11,7 +15,7 @@ function relativeTime(dateStr: string): string {
   return '방금 전';
 }
 
-export default function CommitCard({ commit }: { commit: GitHubCommit }) {
+export function CommitCard({ commit }: CommitCardProps) {
   const { sha, commit: info } = commit;
   const author = info.author?.name ?? '알 수 없음';
   const message = info.message.split('\n')[0];

@@ -1,9 +1,12 @@
 import Link from 'next/link';
-import { getCommits, type GitHubCommit } from '../../lib/github';
-import CommitCard from '../../components/CommitCard';
+import { getCommits, getAllCommits } from '@/services/github/github.service';
+import type { GitHubDto } from '@/services/github/dto/github.dto';
+import { CommitCard } from '@/components/common/commit-card';
+import { BackButton } from '@/components/ui/back-button';
+import { CommitSearchForm } from '@/components/features/commits/commit-search-form';
 
-function groupByDate(commits: GitHubCommit[]): Record<string, GitHubCommit[]> {
-  return commits.reduce<Record<string, GitHubCommit[]>>((groups, commit) => {
+function groupByDate(commits: GitHubDto.Commit[]): Record<string, GitHubDto.Commit[]> {
+  return commits.reduce<Record<string, GitHubDto.Commit[]>>((groups, commit) => {
     const date = new Date(commit.commit.author?.date ?? '').toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: 'long',
@@ -15,56 +18,75 @@ function groupByDate(commits: GitHubCommit[]): Record<string, GitHubCommit[]> {
   }, {});
 }
 
+const DEFAULT_LIMIT = 30;
+const PAGE_SIZE = 20;
+
 export default async function CommitsPage({
   searchParams,
 }: {
-  searchParams: { repo?: string };
+  searchParams: { repo?: string; limit?: string; author?: string; page?: string };
 }) {
-  const targetRepo = searchParams?.repo || process.env.GITHUB_DEFAULT_REPO || '';
+  const targetRepo = searchParams?.repo || '';
+  const limitParam = Number(searchParams?.limit ?? DEFAULT_LIMIT);
+  const fetchAll = limitParam === 0;
+  const author = searchParams?.author?.trim() || undefined;
+  const page = Math.max(1, Number(searchParams?.page ?? 1));
   const [owner, repoName] = targetRepo.split('/');
 
-  let commits: GitHubCommit[] = [];
+  let commits: GitHubDto.Commit[] = [];
   let error: string | null = null;
 
   if (owner && repoName) {
     try {
-      commits = await getCommits(owner, repoName);
+      commits = fetchAll
+        ? await getAllCommits(owner, repoName, author)
+        : await getCommits(owner, repoName, limitParam, author);
     } catch (e) {
       error = e instanceof Error ? e.message : '알 수 없는 오류';
     }
   }
 
-  const grouped = commits.length > 0 ? groupByDate(commits) : {};
+  const totalPages = Math.ceil(commits.length / PAGE_SIZE);
+  const safePage = Math.min(page, totalPages || 1);
+  const pagedCommits = commits.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const grouped = pagedCommits.length > 0 ? groupByDate(pagedCommits) : {};
+
+  // 페이지네이션 URL 생성 (repo, author, limit 유지)
+  const baseQuery = new URLSearchParams();
+  if (targetRepo) baseQuery.set('repo', targetRepo);
+  if (author) baseQuery.set('author', author);
+  if (searchParams?.limit) baseQuery.set('limit', searchParams.limit);
+
+  const prevQuery = new URLSearchParams(baseQuery);
+  prevQuery.set('page', String(safePage - 1));
+  const nextQuery = new URLSearchParams(baseQuery);
+  nextQuery.set('page', String(safePage + 1));
 
   return (
     <div className="max-w-2xl">
       {/* 뒤로가기 + 제목 */}
       <div className="flex items-center gap-3 mb-6">
-        <Link
-          href="/"
-          className="text-gray-400 hover:text-gray-600 transition-colors text-sm font-medium"
-        >
-          ← 뒤로
-        </Link>
-        <h2 className="text-lg font-semibold text-gray-800">Git 커밋 타임라인</h2>
+        <BackButton />
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800">
+            Git 커밋 타임라인
+            {commits.length > 0 && (
+              <span className="ml-2 text-sm font-normal text-gray-400">
+                ({fetchAll ? '전체' : `최근 ${limitParam}개`} · {commits.length}건)
+              </span>
+            )}
+          </h2>
+          {targetRepo && (
+            <p className="text-xs text-gray-400 mt-0.5">
+              {targetRepo}
+              {author && <span className="ml-2 font-medium text-blue-400">@{author}</span>}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* 저장소 입력 폼 */}
-      <form method="GET" className="flex gap-2 mb-8">
-        <input
-          type="text"
-          name="repo"
-          defaultValue={targetRepo}
-          placeholder="owner/repo (예: vercel/next.js)"
-          className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
-        />
-        <button
-          type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
-        >
-          조회
-        </button>
-      </form>
+      <CommitSearchForm />
 
       {/* 에러 */}
       {error && (
@@ -99,6 +121,39 @@ export default async function CommitsPage({
         <p className="text-sm text-gray-400 text-center py-12">
           커밋이 없거나 저장소를 찾을 수 없습니다.
         </p>
+      )}
+
+      {/* 페이지네이션 */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-4 mb-2">
+          {safePage > 1 ? (
+            <Link
+              href={`/commits?${prevQuery}`}
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </Link>
+          ) : (
+            <span className="w-8 h-8" />
+          )}
+          <span className="text-sm text-gray-500">
+            {safePage} / {totalPages}
+          </span>
+          {safePage < totalPages ? (
+            <Link
+              href={`/commits?${nextQuery}`}
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </Link>
+          ) : (
+            <span className="w-8 h-8" />
+          )}
+        </div>
       )}
     </div>
   );

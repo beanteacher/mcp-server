@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCommits, getTodayCommits, getCommitDetail, getUserRepos } from '@/lib/github';
+import { getCommits, getAllCommits, getTodayCommits, getCommitDetail, getUserRepos } from '@/services/github/github.service';
 import { analyzeDailyWork } from '@/lib/gemini';
 
 const TOOLS = [
@@ -12,6 +12,14 @@ const TOOLS = [
         repo: {
           type: 'string',
           description: 'owner/repo 형식 (예: vercel/next.js)',
+        },
+        limit: {
+          type: 'number',
+          description: '가져올 커밋 수 (기본값: 30, 0 입력 시 전체 조회)',
+        },
+        author: {
+          type: 'string',
+          description: '특정 작성자의 커밋만 조회 (GitHub 유저명 또는 이메일)',
         },
       },
       required: ['repo'],
@@ -121,7 +129,11 @@ export async function POST(req: NextRequest) {
       try {
         if (name === 'get_commits') {
           const [owner, repoName] = args.repo.split('/');
-          const commits = await getCommits(owner, repoName);
+          const limit = Number(args.limit ?? 30);
+          const author = args.author || undefined;
+          const commits = limit === 0
+            ? await getAllCommits(owner, repoName, author)
+            : await getCommits(owner, repoName, limit, author);
           const text = commits
             .map(
               (c) =>

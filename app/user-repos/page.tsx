@@ -1,5 +1,8 @@
 import Link from 'next/link';
-import { getUserRepos, type GitHubRepo } from '../../lib/github';
+import { getUserRepos } from '@/services/github/github.service';
+import type { GitHubDto } from '@/services/github/dto/github.dto';
+import { BackButton } from '@/components/ui/back-button';
+import { UserRepoSearchForm } from '@/components/features/user-repos/user-repo-search-form';
 
 export default async function UserReposPage({
   searchParams,
@@ -8,7 +11,7 @@ export default async function UserReposPage({
 }) {
   const username = searchParams?.username || '';
 
-  let repos: GitHubRepo[] = [];
+  let repos: GitHubDto.Repo[] = [];
   let error: string | null = null;
 
   if (username) {
@@ -23,31 +26,12 @@ export default async function UserReposPage({
     <div className="max-w-2xl">
       {/* 뒤로가기 + 제목 */}
       <div className="flex items-center gap-3 mb-6">
-        <Link
-          href="/"
-          className="text-gray-400 hover:text-gray-600 transition-colors text-sm font-medium"
-        >
-          ← 뒤로
-        </Link>
+        <BackButton />
         <h2 className="text-lg font-semibold text-gray-800">유저 레포지토리 목록</h2>
       </div>
 
       {/* 유저명 입력 폼 */}
-      <form method="GET" className="flex gap-2 mb-8">
-        <input
-          type="text"
-          name="username"
-          defaultValue={username}
-          placeholder="GitHub 유저명 (예: beanteacher)"
-          className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
-        />
-        <button
-          type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
-        >
-          조회
-        </button>
-      </form>
+      <UserRepoSearchForm />
 
       {/* 에러 */}
       {error && (

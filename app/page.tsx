@@ -1,5 +1,5 @@
 import { MCP_TOOLS } from '@/config/tools';
-import McpToolCard from '../components/McpToolCard';
+import { McpToolCard } from '@/components/common/mcp-tool-card';
 
 export default function HomePage() {
   return (

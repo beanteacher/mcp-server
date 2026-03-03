@@ -1,7 +1,11 @@
 import Link from 'next/link';
-import type { McpTool } from '../config/tools';
+import type { McpTool } from '@/config/tools';
 
-export default function McpToolCard({ tool }: { tool: McpTool }) {
+interface McpToolCardProps {
+  tool: McpTool;
+}
+
+export function McpToolCard({ tool }: McpToolCardProps) {
   return (
     <Link href={tool.path}>
       <div className="flex flex-col items-center justify-center p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer min-h-[140px] text-center">
