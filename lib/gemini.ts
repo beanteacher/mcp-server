@@ -3,15 +3,32 @@ import type { CommitDetail } from './github';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '');
 
+// generateContent를 지원하는 사용 가능한 모델 목록 반환
+export async function listAvailableModels(): Promise<string[]> {
+  const apiKey = process.env.GEMINI_API_KEY ?? '';
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
+  );
+  if (!res.ok) {
+    throw new Error(`모델 목록 조회 실패: ${res.status}`);
+  }
+  const data = await res.json() as {
+    models: { name: string; supportedGenerationMethods: string[] }[];
+  };
+  return data.models
+    .filter((m) => m.supportedGenerationMethods.includes('generateContent'))
+    .map((m) => m.name); // 예: "models/gemini-1.5-flash-latest"
+}
+
 export async function analyzeDailyWork(
   repo: string,
-  commits: CommitDetail[]
+  commits: CommitDetail[],
+  modelId = 'models/gemini-2.5-flash'
 ): Promise<string> {
   if (commits.length === 0) {
     return '오늘 커밋 내역이 없습니다.';
   }
 
-  // diff 내용을 텍스트로 조합 (파일당 최대 3000자 제한)
   const commitSummaries = commits.map((c) => {
     const message = c.commit.message.split('\n')[0];
     const date = c.commit.author?.date ?? '';
@@ -53,7 +70,7 @@ ${commitSummaries.join('\n\n---\n\n')}
 가능한 한 구체적으로, 개발자가 내일 이어서 작업하거나 팀원에게 공유할 수 있는 수준으로 작성해주세요.
 `.trim();
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+  const model = genAI.getGenerativeModel({ model: modelId });
   const result = await model.generateContent(prompt);
   return result.response.text();
 }
