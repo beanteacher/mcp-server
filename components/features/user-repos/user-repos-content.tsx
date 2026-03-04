@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { BackButton } from '@/components/ui/back-button';
 import { UserRepoSearchForm } from '@/components/features/user-repos/user-repo-search-form';
 import { useUserRepos } from '@/hooks/use-user-repos';
@@ -9,8 +9,7 @@ import { ErrorState } from '@/components/ErrorState';
 import { EmptyState } from '@/components/EmptyState';
 
 export function UserReposContent() {
-  const searchParams = useSearchParams();
-  const username = searchParams.get('username') ?? '';
+  const [username, setUsername] = useState('');
 
   const { repos, isLoading, error } = useUserRepos({ username });
 
@@ -23,7 +22,7 @@ export function UserReposContent() {
       </div>
 
       {/* 유저명 입력 폼 */}
-      <UserRepoSearchForm />
+      <UserRepoSearchForm onSearch={setUsername} />
 
       {/* 로딩 */}
       {isLoading && <LoadingState />}

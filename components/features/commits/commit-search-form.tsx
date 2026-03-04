@@ -1,10 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRouter } from 'next/navigation';
 
 const commitSearchSchema = z.object({
   repo: z
@@ -20,27 +18,25 @@ const commitSearchSchema = z.object({
 
 type CommitSearchFields = z.infer<typeof commitSearchSchema>;
 
-export function CommitSearchForm() {
-  const router = useRouter();
+interface CommitSearchFormProps {
+  onSearch: (params: { repo: string; author?: string; limit: number }) => void;
+}
+
+export function CommitSearchForm({ onSearch }: CommitSearchFormProps) {
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<CommitSearchFields>({
     resolver: zodResolver(commitSearchSchema),
   });
 
-  useEffect(() => {
-    reset();
-  }, [reset]);
-
   const onSubmit = (data: CommitSearchFields) => {
-    const params = new URLSearchParams();
-    params.set('repo', data.repo);
-    if (data.author?.trim()) params.set('author', data.author.trim());
-    if (data.limit) params.set('limit', data.limit);
-    router.push(`/commits?${params}`);
+    onSearch({
+      repo: data.repo,
+      author: data.author?.trim() || undefined,
+      limit: data.limit ? Number(data.limit) : 30,
+    });
   };
 
   return (

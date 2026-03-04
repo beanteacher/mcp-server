@@ -1,7 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import { useState } from 'react';
 import { BackButton } from '@/components/ui/back-button';
 import { DailySummaryForm } from '@/components/features/daily-summary/daily-summary-form';
 import { useDailySummary } from '@/hooks/use-daily-summary';
@@ -12,15 +11,10 @@ import { EmptyState } from '@/components/EmptyState';
 
 const DEFAULT_MODEL = 'models/gemini-2.5-flash';
 
-interface DailySummaryContentProps {
-  defaultRepo: string;
-}
-
-export function DailySummaryContent({ defaultRepo }: DailySummaryContentProps) {
-  const searchParams = useSearchParams();
-  const targetRepo = searchParams.get('repo') ?? defaultRepo;
-  const showModels = searchParams.get('models') === '1';
-  const selectedModel = searchParams.get('model') ?? DEFAULT_MODEL;
+export function DailySummaryContent() {
+  const [repo, setRepo] = useState('');
+  const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
+  const [showModels, setShowModels] = useState(false);
 
   const { models, isLoading: modelsLoading, error: modelsError } = useModels(showModels);
   const {
@@ -28,7 +22,7 @@ export function DailySummaryContent({ defaultRepo }: DailySummaryContentProps) {
     commitCount,
     isLoading: summaryLoading,
     error: summaryError,
-  } = useDailySummary({ repo: targetRepo, model: selectedModel, enabled: !showModels });
+  } = useDailySummary({ repo, model: selectedModel, enabled: !showModels && repo !== '' });
 
   const isLoading = showModels ? modelsLoading : summaryLoading;
   const error = showModels ? modelsError : summaryError;
@@ -41,12 +35,13 @@ export function DailySummaryContent({ defaultRepo }: DailySummaryContentProps) {
           <BackButton />
           <h2 className="text-lg font-semibold text-neutral-50">오늘의 작업 정리</h2>
         </div>
-        <Link
-          href={`/daily-summary?models=1${targetRepo ? `&repo=${targetRepo}` : ''}`}
+        <button
+          type="button"
+          onClick={() => setShowModels(true)}
           className="text-xs text-neutral-600 hover:text-primary-300 transition-colors"
         >
           모델 목록 보기
-        </Link>
+        </button>
       </div>
 
       {/* 모델 목록 */}
@@ -56,12 +51,13 @@ export function DailySummaryContent({ defaultRepo }: DailySummaryContentProps) {
             <h3 className="text-sm font-semibold text-neutral-50">
               generateContent 지원 모델 목록
             </h3>
-            <Link
-              href={`/daily-summary${targetRepo ? `?repo=${targetRepo}` : ''}`}
+            <button
+              type="button"
+              onClick={() => setShowModels(false)}
               className="text-xs text-primary-300 hover:underline"
             >
               ← 분석으로 돌아가기
-            </Link>
+            </button>
           </div>
           {isLoading && <LoadingState />}
           {!isLoading && error && <ErrorState message={error} />}
@@ -71,12 +67,13 @@ export function DailySummaryContent({ defaultRepo }: DailySummaryContentProps) {
                 <div key={m} className="flex items-center justify-between px-4 py-2.5 gap-3">
                   <span className="font-mono text-sm text-neutral-50">{m}</span>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <Link
-                      href={`/daily-summary?model=${encodeURIComponent(m)}${targetRepo ? `&repo=${targetRepo}` : ''}`}
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedModel(m); setShowModels(false); }}
                       className="text-xs px-2 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-primary-300 transition-colors"
                     >
                       이 모델로 분석
-                    </Link>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -97,9 +94,9 @@ export function DailySummaryContent({ defaultRepo }: DailySummaryContentProps) {
           </div>
 
           {/* 저장소 입력 폼 */}
-          <DailySummaryForm selectedModel={selectedModel} />
+          <DailySummaryForm onSearch={setRepo} />
 
-          {!targetRepo && (
+          {!repo && (
             <EmptyState message="저장소를 입력하세요" description="저장소를 입력하고 분석하기 버튼을 누르세요." />
           )}
 

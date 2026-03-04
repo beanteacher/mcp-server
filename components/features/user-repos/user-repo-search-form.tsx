@@ -1,10 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRouter } from 'next/navigation';
 
 const userRepoSearchSchema = z.object({
   username: z.string().min(1, '유저명을 입력해주세요'),
@@ -12,23 +10,21 @@ const userRepoSearchSchema = z.object({
 
 type UserRepoSearchFields = z.infer<typeof userRepoSearchSchema>;
 
-export function UserRepoSearchForm() {
-  const router = useRouter();
+interface UserRepoSearchFormProps {
+  onSearch: (username: string) => void;
+}
+
+export function UserRepoSearchForm({ onSearch }: UserRepoSearchFormProps) {
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<UserRepoSearchFields>({
     resolver: zodResolver(userRepoSearchSchema),
   });
 
-  useEffect(() => {
-    reset();
-  }, [reset]);
-
   const onSubmit = (data: UserRepoSearchFields) => {
-    router.push(`/user-repos?username=${encodeURIComponent(data.username)}`);
+    onSearch(data.username);
   };
 
   return (

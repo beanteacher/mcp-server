@@ -1,10 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRouter } from 'next/navigation';
 
 const dailySummarySchema = z.object({
   repo: z
@@ -16,27 +14,20 @@ const dailySummarySchema = z.object({
 type DailySummaryFields = z.infer<typeof dailySummarySchema>;
 
 interface DailySummaryFormProps {
-  selectedModel: string;
+  onSearch: (repo: string) => void;
 }
 
-export function DailySummaryForm({ selectedModel }: DailySummaryFormProps) {
-  const router = useRouter();
+export function DailySummaryForm({ onSearch }: DailySummaryFormProps) {
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<DailySummaryFields>({
     resolver: zodResolver(dailySummarySchema),
   });
 
-  useEffect(() => {
-    reset();
-  }, [reset]);
-
   const onSubmit = (data: DailySummaryFields) => {
-    const params = new URLSearchParams({ repo: data.repo, model: selectedModel });
-    router.push(`/daily-summary?${params}`);
+    onSearch(data.repo);
   };
 
   return (
