@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { getCommits, type GitHubCommit } from '../../lib/github';
 import CommitCard from '../../components/CommitCard';
+import { ErrorState } from '../../components/ErrorState';
+import { EmptyState } from '../../components/EmptyState';
 
 function groupByDate(commits: GitHubCommit[]): Record<string, GitHubCommit[]> {
   return commits.reduce<Record<string, GitHubCommit[]>>((groups, commit) => {
@@ -42,11 +44,11 @@ export default async function CommitsPage({
       <div className="flex items-center gap-3 mb-6">
         <Link
           href="/"
-          className="text-gray-400 hover:text-gray-600 transition-colors text-sm font-medium"
+          className="text-neutral-600 hover:text-neutral-50 transition-colors text-sm font-medium"
         >
           ← 뒤로
         </Link>
-        <h2 className="text-lg font-semibold text-gray-800">Git 커밋 타임라인</h2>
+        <h2 className="text-lg font-semibold text-neutral-50">Git 커밋 타임라인</h2>
       </div>
 
       {/* 저장소 입력 폼 */}
@@ -56,37 +58,34 @@ export default async function CommitsPage({
           name="repo"
           defaultValue={targetRepo}
           placeholder="owner/repo (예: vercel/next.js)"
-          className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
+          className="flex-1 px-3 py-2 text-sm border border-neutral-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-neutral-800 text-neutral-50 placeholder:text-neutral-600"
         />
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+          className="px-4 py-2 text-sm font-medium text-white bg-primary-500 hover:bg-primary-700 rounded-lg transition-colors"
         >
           조회
         </button>
       </form>
 
       {/* 에러 */}
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 mb-6">
-          오류: {error}
-        </div>
-      )}
+      {error && <ErrorState message={error} />}
 
       {/* 안내 메시지 */}
       {!targetRepo && (
-        <p className="text-sm text-gray-400 text-center py-12">
-          저장소를 입력하고 조회 버튼을 누르세요.
-        </p>
+        <EmptyState
+          message="저장소를 입력하세요"
+          description="owner/repo 형식으로 입력 후 조회하세요."
+        />
       )}
 
       {/* 커밋 타임라인 */}
       {Object.entries(grouped).map(([date, dayCommits]) => (
         <div key={date} className="mb-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+          <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-3">
             {date}
           </p>
-          <div className="bg-white border border-gray-100 rounded-xl px-5 divide-y divide-gray-50">
+          <div className="bg-surface-card border border-neutral-800 rounded-xl px-5 divide-y divide-neutral-800">
             {dayCommits.map((commit) => (
               <CommitCard key={commit.sha} commit={commit} />
             ))}
@@ -96,9 +95,10 @@ export default async function CommitsPage({
 
       {/* 결과 없음 */}
       {targetRepo && commits.length === 0 && !error && (
-        <p className="text-sm text-gray-400 text-center py-12">
-          커밋이 없거나 저장소를 찾을 수 없습니다.
-        </p>
+        <EmptyState
+          message="커밋이 없습니다"
+          description="해당 저장소에 커밋 내역이 없거나 저장소를 찾을 수 없습니다."
+        />
       )}
     </div>
   );
