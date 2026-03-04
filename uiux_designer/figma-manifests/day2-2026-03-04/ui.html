@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MCP Tools UI Design — Day 2</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0A0F1E;
+      color: #F8FAFC;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #3B82F6;
+      margin-bottom: 2px;
+      letter-spacing: -0.3px;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: #94A3B8;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: #94A3B8;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 150ms ease, transform 80ms ease;
+      margin-bottom: 6px;
+      text-align: left;
+      color: inherit;
+    }
+
+    .btn:active { transform: scale(0.98); }
+
+    .btn-primary {
+      background: #3B82F6;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #1D4ED8; }
+
+    .btn-secondary {
+      background: #1E293B;
+      color: #E2E8F0;
+    }
+    .btn-secondary:hover { background: #2D3F56; }
+
+    .btn-ghost {
+      background: transparent;
+      color: #94A3B8;
+      border: 1px solid #1E293B;
+    }
+    .btn-ghost:hover { background: #1E293B; }
+
+    .icon { font-size: 15px; flex-shrink: 0; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #1E293B;
+      margin: 14px 0;
+    }
+
+    #status {
+      font-size: 11px;
+      color: #22C55E;
+      min-height: 16px;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .badge {
+      margin-left: auto;
+      font-size: 10px;
+      background: #1E3A8A;
+      color: #93C5FD;
+      border-radius: 4px;
+      padding: 2px 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>MCP Tools UI Design</h1>
+  <p class="subtitle">Sprint 1 Day 2 — 2026-03-04</p>
+
+  <button class="btn btn-primary" onclick="send('build-all')">
+    <span class="icon">⚡</span>
+    전체 프레임 생성 (3개)
+  </button>
+
+  <hr class="divider" />
+
+  <div class="section-title">컴포넌트</div>
+
+  <button class="btn btn-secondary" onclick="send('build-card-states')">
+    <span class="icon">🃏</span>
+    McpToolCard 상태별 목업
+    <span class="badge">3 states</span>
+  </button>
+
+  <hr class="divider" />
+
+  <div class="section-title">페이지 레이아웃</div>
+
+  <button class="btn btn-secondary" onclick="send('build-home-desktop')">
+    <span class="icon">🖥</span>
+    Home / Desktop (1280px)
+  </button>
+
+  <button class="btn btn-secondary" onclick="send('build-home-mobile')">
+    <span class="icon">📱</span>
+    Home / Mobile (375px)
+  </button>
+
+  <hr class="divider" />
+
+  <button class="btn btn-ghost" onclick="send('close')">
+    <span class="icon">✕</span>
+    플러그인 닫기
+  </button>
+
+  <div id="status"></div>
+
+  <script>
+    const messages = {
+      'build-all':          '전체 프레임 생성 중...',
+      'build-card-states':  'McpToolCard 프레임 생성 중...',
+      'build-home-desktop': 'Home Desktop 프레임 생성 중...',
+      'build-home-mobile':  'Home Mobile 프레임 생성 중...',
+      'close':              '종료 중...',
+    };
+
+    function send(type) {
+      parent.postMessage({ pluginMessage: { type } }, '*');
+      const el = document.getElementById('status');
+      el.textContent = messages[type] || '';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "MCP Tools UI Design — Day 2",
+  "id": "mcp-tools-ui-design-day2",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"]
+}

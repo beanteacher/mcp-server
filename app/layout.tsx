@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { Header } from '../components/Header';
 
 export const metadata: Metadata = {
   title: 'MCP Tools Dashboard',
@@ -13,15 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="bg-gray-50 min-h-screen">
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="max-w-5xl mx-auto">
-            <h1 className="text-xl font-semibold text-gray-800">
-              🔧 MCP Tools Dashboard
-            </h1>
-          </div>
-        </header>
-        <main className="max-w-5xl mx-auto px-6 py-8">{children}</main>
+      <body className="min-h-screen">
+        <Header />
+        <main className="max-w-5xl mx-auto px-6 py-8 pt-24">{children}</main>
       </body>
     </html>
   );

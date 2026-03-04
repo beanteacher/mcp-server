@@ -4,9 +4,9 @@ import { getUserRepos, type GitHubRepo } from '../../lib/github';
 export default async function UserReposPage({
   searchParams,
 }: {
-  searchParams: { username?: string };
+  searchParams: Promise<{ username?: string }>;
 }) {
-  const username = searchParams?.username || '';
+  const { username = '' } = await searchParams;
 
   let repos: GitHubRepo[] = [];
   let error: string | null = null;
@@ -90,7 +90,7 @@ export default async function UserReposPage({
                     </span>
                   )}
                   {repo.stargazers_count > 0 && (
-                    <span className="text-xs text-yellow-600">⭐{repo.stargazers_count}</span>
+                    <span className="text-xs text-yellow-600">★ {repo.stargazers_count}</span>
                   )}
                 </div>
               </a>
