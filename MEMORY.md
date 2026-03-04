@@ -37,6 +37,7 @@
 - 디자인 토큰: uiux_designer/design-tokens.md
 - 컴포넌트 스펙 Day1: uiux_designer/component-specs-day1.md
 - 컴포넌트 스펙 Day2: uiux_designer/component-specs-day2.md
+- 컴포넌트 스펙 Day4: uiux_designer/component-specs-day4.md
 - FE 핸드오프: uiux_designer/day1-handoff-for-fe.md
 - Figma 플러그인: uiux_designer/figma-manifests/dayN-YYYY-MM-DD/
 
@@ -59,4 +60,5 @@ TeamCreate(team_name="mcp-server-team")
 - main 직접 push 금지 → feature/* 브랜치 사용
 - persona/uiux_designer/AGENTS.md 수정 금지 (재사용 템플릿)
 - 프로젝트별 설정은 mcp-server/AGENTS.md에 작성
+- uiux_designer day 작업 시 manifest 폴더에 manifest.json + code.js + ui.html 3개 파일을 같은 경로에 함께 생성
 - Windows 동기화 없음 → Git repo에만 저장
