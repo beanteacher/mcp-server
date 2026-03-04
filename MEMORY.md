@@ -19,19 +19,25 @@
   - 공통 컴포넌트: Header, Navigation, LoadingState, ErrorState, EmptyState
   - McpToolCard 다크 테마 리디자인
   - globals.css 다크 테마 (surface-background #0A0F1E)
-- **Sprint 2**: Day 1 완료 ✅ (2026-03-04, push: feature/sprint1-design-system)
+- **Sprint 2**: Day 1 완료 ✅ (2026-03-04)
   - CommitCard.tsx 다크 테마 (primary-500 도트, neutral-800 선, primary-300 SHA)
-  - commits/page.tsx 다크 테마 + ErrorState/EmptyState 연결
-  - daily-summary/page.tsx 다크 테마 + ErrorState/EmptyState 연결
-  - user-repos/page.tsx 다크 테마 + ErrorState/EmptyState 연결
   - uiux_designer/component-specs-day4.md: 3개 페이지 스펙
   - uiux_designer/figma-manifests/day4-2026-03-05/manifest.json
+- **Sprint 2**: Day 2 완료 ✅ (2026-03-04, branch: main)
+  - commits-content.tsx 다크 테마 + LoadingState/ErrorState/EmptyState 연결
+  - daily-summary-content.tsx 다크 테마 + LoadingState/ErrorState/EmptyState 연결
+  - user-repos-content.tsx 다크 테마 + LoadingState/ErrorState/EmptyState 연결
+  - commit-search-form / daily-summary-form / user-repo-search-form 인풋/버튼 다크 테마
+  - back-button 다크 테마
+  - page.tsx 3개 Suspense fallback → LoadingState 교체
+  - next build 성공 (에러 0건)
 
 ### 계획 문서 (주의: .omc/는 .gitignore 대상)
 - MASTER_PLAN.md: .omc/plans/MASTER_PLAN.md
 - WBS.md: .omc/plans/WBS.md
 - SPRINT_PLAN.md (Sprint 1): .omc/plans/SPRINT_PLAN.md
 - SPRINT2_PLAN.md: .omc/plans/SPRINT2_PLAN.md
+- SPRINT3_PLAN.md: .omc/plans/SPRINT3_PLAN.md
 
 ### UI/UX 산출물 경로
 - 디자인 토큰: uiux_designer/design-tokens.md
