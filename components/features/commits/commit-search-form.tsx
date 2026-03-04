@@ -29,13 +29,14 @@ export function CommitSearchForm({ onSearch }: CommitSearchFormProps) {
     formState: { errors },
   } = useForm<CommitSearchFields>({
     resolver: zodResolver(commitSearchSchema),
+    defaultValues: { repo: 'beanteacher/mcp-server' ,limit: '0' },
   });
 
   const onSubmit = (data: CommitSearchFields) => {
     onSearch({
       repo: data.repo,
       author: data.author?.trim() || undefined,
-      limit: data.limit ? Number(data.limit) : 30,
+      limit: data.limit !== undefined && data.limit !== '' ? Number(data.limit) : 0,
     });
   };
 
@@ -44,13 +45,13 @@ export function CommitSearchForm({ onSearch }: CommitSearchFormProps) {
       <div className="flex flex-col sm:flex-row gap-2">
         <input
           {...register('repo')}
-          placeholder="owner/repo (예: vercel/next.js)"
+          placeholder="저장소 (소유자/레포명)"
           className="flex-1 min-w-0 bg-neutral-800 border border-neutral-800 text-neutral-50 placeholder:text-neutral-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         />
         <input
           {...register('author')}
-          placeholder="작성자 (선택)"
-          className="w-full sm:w-32 bg-neutral-800 border border-neutral-800 text-neutral-50 placeholder:text-neutral-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          placeholder="작성자"
+          className="w-full sm:w-28 bg-neutral-800 border border-neutral-800 text-neutral-50 placeholder:text-neutral-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         />
         <input
           {...register('limit')}

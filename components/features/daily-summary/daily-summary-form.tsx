@@ -35,7 +35,7 @@ export function DailySummaryForm({ onSearch }: DailySummaryFormProps) {
       <div className="flex flex-col sm:flex-row gap-2">
         <input
           {...register('repo')}
-          placeholder="owner/repo (예: wisecan-github/web-wisecan-oam-back)"
+          placeholder="저장소 (소유자/레포명)"
           className="flex-1 bg-neutral-800 border border-neutral-800 text-neutral-50 placeholder:text-neutral-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         />
         <button

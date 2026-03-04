@@ -15,6 +15,7 @@ export function DailySummaryContent() {
   const [repo, setRepo] = useState('');
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
   const [showModels, setShowModels] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { models, isLoading: modelsLoading, error: modelsError } = useModels(showModels);
   const {
@@ -22,7 +23,7 @@ export function DailySummaryContent() {
     commitCount,
     isLoading: summaryLoading,
     error: summaryError,
-  } = useDailySummary({ repo, model: selectedModel, enabled: !showModels && repo !== '' });
+  } = useDailySummary({ repo, model: selectedModel, enabled: !showModels && repo !== '', refreshKey });
 
   const isLoading = showModels ? modelsLoading : summaryLoading;
   const error = showModels ? modelsError : summaryError;
@@ -102,7 +103,7 @@ export function DailySummaryContent() {
 
           {isLoading && <LoadingState message="분석 중..." />}
 
-          {!isLoading && error && <ErrorState message={error} />}
+          {!isLoading && error && <ErrorState message={error} onRetry={() => setRefreshKey((k) => k + 1)} />}
 
           {!isLoading && summary && (
             <div>

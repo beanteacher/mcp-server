@@ -3,6 +3,7 @@ import type { GitHubDto } from '@/services/github/dto/github.dto';
 
 interface UseUserReposParams {
   username: string;
+  refreshKey?: number;
 }
 
 interface UseUserReposResult {
@@ -11,7 +12,7 @@ interface UseUserReposResult {
   error: string | null;
 }
 
-export function useUserRepos({ username }: UseUserReposParams): UseUserReposResult {
+export function useUserRepos({ username, refreshKey = 0 }: UseUserReposParams): UseUserReposResult {
   const [repos, setRepos] = useState<GitHubDto.Repo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +37,7 @@ export function useUserRepos({ username }: UseUserReposParams): UseUserReposResu
         setError(e instanceof Error ? e.message : '알 수 없는 오류');
       })
       .finally(() => setIsLoading(false));
-  }, [username]);
+  }, [username, refreshKey]);
 
   return { repos, isLoading, error };
 }

@@ -4,6 +4,7 @@ interface UseDailySummaryParams {
   repo: string;
   model?: string;
   enabled?: boolean;
+  refreshKey?: number;
 }
 
 interface UseDailySummaryResult {
@@ -17,6 +18,7 @@ export function useDailySummary({
   repo,
   model = 'models/gemini-2.5-flash',
   enabled = true,
+  refreshKey = 0,
 }: UseDailySummaryParams): UseDailySummaryResult {
   const [summary, setSummary] = useState<string | null>(null);
   const [commitCount, setCommitCount] = useState(0);
@@ -45,7 +47,7 @@ export function useDailySummary({
         setError(e instanceof Error ? e.message : '알 수 없는 오류');
       })
       .finally(() => setIsLoading(false));
-  }, [enabled, repo, model]);
+  }, [enabled, repo, model, refreshKey]);
 
   return { summary, commitCount, isLoading, error };
 }

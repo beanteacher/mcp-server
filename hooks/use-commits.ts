@@ -5,6 +5,7 @@ interface UseCommitsParams {
   repo: string;
   author?: string;
   limit?: number;
+  refreshKey?: number;
 }
 
 interface UseCommitsResult {
@@ -13,7 +14,7 @@ interface UseCommitsResult {
   error: string | null;
 }
 
-export function useCommits({ repo, author, limit = 30 }: UseCommitsParams): UseCommitsResult {
+export function useCommits({ repo, author, limit = 30, refreshKey = 0 }: UseCommitsParams): UseCommitsResult {
   const [commits, setCommits] = useState<GitHubDto.Commit[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +41,7 @@ export function useCommits({ repo, author, limit = 30 }: UseCommitsParams): UseC
         setError(e instanceof Error ? e.message : '알 수 없는 오류');
       })
       .finally(() => setIsLoading(false));
-  }, [repo, author, limit]);
+  }, [repo, author, limit, refreshKey]);
 
   return { commits, isLoading, error };
 }

@@ -34,11 +34,13 @@ const PAGE_SIZE = 20;
 export function CommitsContent() {
   const [query, setQuery] = useState<CommitQuery | null>(null);
   const [page, setPage] = useState(1);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { commits, isLoading, error } = useCommits({
     repo: query?.repo ?? '',
     author: query?.author,
-    limit: query?.limit ?? 30,
+    limit: query?.limit ?? 0,
+    refreshKey,
   });
 
   const handleSearch = (params: CommitQuery) => {
@@ -82,7 +84,7 @@ export function CommitsContent() {
       {isLoading && <LoadingState />}
 
       {/* 에러 */}
-      {!isLoading && error && <ErrorState message={error} />}
+      {!isLoading && error && <ErrorState message={error} onRetry={() => setRefreshKey((k) => k + 1)} />}
 
       {/* 안내 메시지 */}
       {!isLoading && !query && (

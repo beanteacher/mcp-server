@@ -10,8 +10,9 @@ import { EmptyState } from '@/components/EmptyState';
 
 export function UserReposContent() {
   const [username, setUsername] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const { repos, isLoading, error } = useUserRepos({ username });
+  const { repos, isLoading, error } = useUserRepos({ username, refreshKey });
 
   return (
     <>
@@ -28,7 +29,7 @@ export function UserReposContent() {
       {isLoading && <LoadingState />}
 
       {/* 에러 */}
-      {!isLoading && error && <ErrorState message={error} />}
+      {!isLoading && error && <ErrorState message={error} onRetry={() => setRefreshKey((k) => k + 1)} />}
 
       {/* 안내 메시지 */}
       {!isLoading && !username && (

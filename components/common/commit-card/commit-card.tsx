@@ -27,7 +27,7 @@ export function CommitCard({ commit }: CommitCardProps) {
         <div className="w-0.5 h-full bg-neutral-800 mt-1" />
       </div>
       <div className="flex-1 pb-4">
-        <p className="text-sm font-medium text-neutral-50 leading-snug">{message}</p>
+        <p className="text-sm font-medium text-neutral-50 leading-snug truncate">{message}</p>
         <div className="flex items-center gap-2 mt-1">
           <code className="text-xs bg-neutral-800 text-primary-300 px-1.5 py-0.5 rounded font-mono">
             {sha.slice(0, 7)}
