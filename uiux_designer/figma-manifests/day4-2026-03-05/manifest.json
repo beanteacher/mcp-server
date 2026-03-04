@@ -1,0 +1,76 @@
+{
+  "name": "MCP Dashboard - Sprint2 Day4 Auto Frames",
+  "id": "sprint2-day4-2026-03-05",
+  "version": "1.0.0",
+  "created": "2026-03-05",
+  "sprint": "Sprint2",
+  "day": "Day4",
+  "figma_file": "03. UI Design",
+  "figma_url": "https://www.figma.com/design/02QfErcBAVxFBRnq0m5lVJ/UI-Design",
+  "frames": [
+    {
+      "name": "Sprint2 / Commits Timeline",
+      "description": "커밋 타임라인 페이지 다크 테마 - 폼 + 날짜 그룹 + CommitCard",
+      "page": "Sprint2",
+      "width": 1440,
+      "height": 900,
+      "background": "#0A0F1E",
+      "components": [
+        "PageHeader",
+        "SearchForm",
+        "DateGroupHeader",
+        "CommitCard",
+        "EmptyState",
+        "ErrorState"
+      ]
+    },
+    {
+      "name": "Sprint2 / Daily Summary",
+      "description": "일일 요약 페이지 다크 테마 - 폼 + AI 분석 결과 카드",
+      "page": "Sprint2",
+      "width": 1440,
+      "height": 900,
+      "background": "#0A0F1E",
+      "components": [
+        "PageHeader",
+        "ModelBadge",
+        "SearchForm",
+        "AnalysisResultCard",
+        "CommitCountBadge",
+        "EmptyState",
+        "ErrorState"
+      ]
+    },
+    {
+      "name": "Sprint2 / User Repos",
+      "description": "유저 레포지토리 페이지 다크 테마 - 검색 폼 + 레포 카드 목록",
+      "page": "Sprint2",
+      "width": 1440,
+      "height": 900,
+      "background": "#0A0F1E",
+      "components": [
+        "PageHeader",
+        "SearchForm",
+        "RepoCard",
+        "LanguageBadge",
+        "StarDisplay",
+        "EmptyState",
+        "ErrorState"
+      ]
+    }
+  ],
+  "design_tokens": {
+    "surface_background": "#0A0F1E",
+    "surface_card": "#1E293B",
+    "neutral_800": "#1E293B",
+    "neutral_600": "#475569",
+    "neutral_400": "#94A3B8",
+    "neutral_200": "#E2E8F0",
+    "neutral_50": "#F8FAFC",
+    "primary_900": "#1E3A8A",
+    "primary_700": "#1D4ED8",
+    "primary_500": "#3B82F6",
+    "primary_300": "#93C5FD",
+    "warning": "#F59E0B"
+  }
+}
