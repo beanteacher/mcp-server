@@ -41,16 +41,16 @@ export function CommitSearchForm({ onSearch }: CommitSearchFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="mb-8">
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <input
           {...register('repo')}
           placeholder="owner/repo (예: vercel/next.js)"
-          className="flex-1 bg-neutral-800 border border-neutral-800 text-neutral-50 placeholder:text-neutral-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="flex-1 min-w-0 bg-neutral-800 border border-neutral-800 text-neutral-50 placeholder:text-neutral-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         />
         <input
           {...register('author')}
           placeholder="작성자 (선택)"
-          className="w-32 bg-neutral-800 border border-neutral-800 text-neutral-50 placeholder:text-neutral-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="w-full sm:w-32 bg-neutral-800 border border-neutral-800 text-neutral-50 placeholder:text-neutral-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         />
         <input
           {...register('limit')}
@@ -58,7 +58,7 @@ export function CommitSearchForm({ onSearch }: CommitSearchFormProps) {
           min={0}
           placeholder="개수 (0=전체)"
           title="가져올 커밋 수 (0 입력 시 전체 조회)"
-          className="w-28 bg-neutral-800 border border-neutral-800 text-neutral-50 placeholder:text-neutral-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="w-full sm:w-28 bg-neutral-800 border border-neutral-800 text-neutral-50 placeholder:text-neutral-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         />
         <button
           type="submit"

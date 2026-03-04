@@ -14,7 +14,7 @@ export function Navigation() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex items-center gap-2">
+    <nav className="hidden md:flex items-center gap-2">
       {NAV_ITEMS.map(({ label, href }) => {
         const isActive = pathname === href;
         return (

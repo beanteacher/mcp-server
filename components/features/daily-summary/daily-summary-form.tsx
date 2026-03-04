@@ -32,7 +32,7 @@ export function DailySummaryForm({ onSearch }: DailySummaryFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="mb-8">
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <input
           {...register('repo')}
           placeholder="owner/repo (예: wisecan-github/web-wisecan-oam-back)"

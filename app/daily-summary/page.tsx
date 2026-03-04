@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export default function DailySummaryPage() {
   return (
-    <div className="max-w-2xl">
+    <div className="w-full max-w-2xl">
       <Suspense fallback={<LoadingState />}>
         <DailySummaryContent />
       </Suspense>
