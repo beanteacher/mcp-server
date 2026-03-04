@@ -6,6 +6,9 @@ import { BackButton } from '@/components/ui/back-button';
 import { CommitCard } from '@/components/common/commit-card';
 import { CommitSearchForm } from '@/components/features/commits/commit-search-form';
 import { useCommits } from '@/hooks/use-commits';
+import { LoadingState } from '@/components/LoadingState';
+import { ErrorState } from '@/components/ErrorState';
+import { EmptyState } from '@/components/EmptyState';
 import type { GitHubDto } from '@/services/github/dto/github.dto';
 
 function groupByDate(commits: GitHubDto.Commit[]): Record<string, GitHubDto.Commit[]> {
@@ -56,18 +59,18 @@ export function CommitsContent() {
       <div className="flex items-center gap-3 mb-6">
         <BackButton />
         <div>
-          <h2 className="text-lg font-semibold text-gray-800">
+          <h2 className="text-lg font-semibold text-neutral-50">
             Git 커밋 타임라인
             {commits.length > 0 && (
-              <span className="ml-2 text-sm font-normal text-gray-400">
+              <span className="ml-2 text-sm font-normal text-neutral-400">
                 ({fetchAll ? '전체' : `최근 ${limitParam}개`} · {commits.length}건)
               </span>
             )}
           </h2>
           {targetRepo && (
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-neutral-400 mt-0.5">
               {targetRepo}
-              {author && <span className="ml-2 font-medium text-blue-400">@{author}</span>}
+              {author && <span className="ml-2 font-medium text-primary-300">@{author}</span>}
             </p>
           )}
         </div>
@@ -77,32 +80,24 @@ export function CommitsContent() {
       <CommitSearchForm />
 
       {/* 로딩 */}
-      {isLoading && (
-        <p className="text-sm text-gray-400 text-center py-12">불러오는 중...</p>
-      )}
+      {isLoading && <LoadingState />}
 
       {/* 에러 */}
-      {!isLoading && error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 mb-6">
-          오류: {error}
-        </div>
-      )}
+      {!isLoading && error && <ErrorState message={error} />}
 
       {/* 안내 메시지 */}
       {!isLoading && !targetRepo && (
-        <p className="text-sm text-gray-400 text-center py-12">
-          저장소를 입력하고 조회 버튼을 누르세요.
-        </p>
+        <EmptyState message="저장소를 입력하세요" description="owner/repo 형식으로 입력 후 조회하세요." />
       )}
 
       {/* 커밋 타임라인 */}
       {!isLoading &&
         Object.entries(grouped).map(([date, dayCommits]) => (
           <div key={date} className="mb-6">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+            <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-3">
               {date}
             </p>
-            <div className="bg-white border border-gray-100 rounded-xl px-5 divide-y divide-gray-50">
+            <div className="bg-surface-card border border-neutral-800 rounded-xl px-5 divide-y divide-neutral-800">
               {dayCommits.map((commit) => (
                 <CommitCard key={commit.sha} commit={commit} />
               ))}
@@ -112,9 +107,7 @@ export function CommitsContent() {
 
       {/* 결과 없음 */}
       {!isLoading && targetRepo && commits.length === 0 && !error && (
-        <p className="text-sm text-gray-400 text-center py-12">
-          커밋이 없거나 저장소를 찾을 수 없습니다.
-        </p>
+        <EmptyState message="커밋이 없습니다" description="해당 저장소에 커밋 내역이 없습니다." />
       )}
 
       {/* 페이지네이션 */}
@@ -123,7 +116,7 @@ export function CommitsContent() {
           {safePage > 1 ? (
             <Link
               href={`/commits?${prevQuery}`}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-neutral-800 transition-colors text-neutral-600 hover:text-neutral-50"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -132,13 +125,13 @@ export function CommitsContent() {
           ) : (
             <span className="w-8 h-8" />
           )}
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-neutral-400">
             {safePage} / {totalPages}
           </span>
           {safePage < totalPages ? (
             <Link
               href={`/commits?${nextQuery}`}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-neutral-800 transition-colors text-neutral-600 hover:text-neutral-50"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />

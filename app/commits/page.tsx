@@ -1,10 +1,11 @@
 import { Suspense } from 'react';
 import { CommitsContent } from '@/components/features/commits/commits-content';
+import { LoadingState } from '@/components/LoadingState';
 
 export default function CommitsPage() {
   return (
     <div className="max-w-2xl">
-      <Suspense fallback={<p className="text-sm text-gray-400 text-center py-12">로딩 중...</p>}>
+      <Suspense fallback={<LoadingState />}>
         <CommitsContent />
       </Suspense>
     </div>

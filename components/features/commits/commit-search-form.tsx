@@ -49,12 +49,12 @@ export function CommitSearchForm() {
         <input
           {...register('repo')}
           placeholder="owner/repo (예: vercel/next.js)"
-          className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
+          className="flex-1 bg-neutral-800 border border-neutral-800 text-neutral-50 placeholder:text-neutral-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         />
         <input
           {...register('author')}
           placeholder="작성자 (선택)"
-          className="w-32 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
+          className="w-32 bg-neutral-800 border border-neutral-800 text-neutral-50 placeholder:text-neutral-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         />
         <input
           {...register('limit')}
@@ -62,17 +62,17 @@ export function CommitSearchForm() {
           min={0}
           placeholder="개수 (0=전체)"
           title="가져올 커밋 수 (0 입력 시 전체 조회)"
-          className="w-28 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
+          className="w-28 bg-neutral-800 border border-neutral-800 text-neutral-50 placeholder:text-neutral-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         />
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+          className="px-4 py-2 text-sm font-medium text-neutral-50 bg-primary-500 hover:bg-primary-700 rounded-lg transition-colors"
         >
           조회
         </button>
       </div>
       {errors.repo && (
-        <p className="text-xs text-red-500 mt-1">{errors.repo.message}</p>
+        <p className="text-xs text-error mt-1">{errors.repo.message}</p>
       )}
     </form>
   );

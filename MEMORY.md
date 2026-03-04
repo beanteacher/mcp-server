@@ -3,7 +3,7 @@
 ## mcp-server 프로젝트
 
 ### 기본 정보
-- **경로**: C:\Users\wisecan\Desktop\min\workspace\mcp-server
+- **경로**: ..\mcp-server
 - **GitHub**: https://github.com/beanteacher/mcp-server
 - **스택**: Next.js 14 (App Router), TypeScript, Tailwind CSS, Gemini API
 - **현재 브랜치**: feature/sprint1-design-system (push 완료, PR 대기 중)
@@ -50,10 +50,10 @@ TeamCreate(team_name="mcp-server-team")
 ```
 
 ### 페르소나 경로
-- PM: C:\Users\wisecan\Desktop\min\workspace\persona\project_manager\AGENTS.md
-- FE: C:\Users\wisecan\Desktop\min\workspace\persona\frontend_developer\AGENTS.md
-- UIUX: C:\Users\wisecan\Desktop\min\workspace\persona\uiux_designer\AGENTS.md
-- 공통 규칙: C:\Users\wisecan\Desktop\min\workspace\persona\AGENTS.md
+- PM: ..\persona\project_manager\AGENTS.md
+- FE: ..\persona\frontend_developer\AGENTS.md
+- UIUX: ..\persona\uiux_designer\AGENTS.md
+- 공통 규칙: ..\persona\AGENTS.md
 
 ### 주요 규칙
 - git push 자동 실행 금지 (사용자 승인 후 실행)
