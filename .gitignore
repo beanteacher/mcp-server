@@ -25,7 +25,9 @@ yarn-debug.log*
 yarn-error.log*
 
 # OMC internal
-.omc/
+.omc/*
+!.omc/plans/
+!.omc/plans/**
 
 # IDE
 .idea/
