@@ -1,0 +1,8 @@
+{
+  "name": "MCP Dashboard - Sprint4 Day6 Theme & Animation",
+  "api": "1.0.0",
+  "id": "sprint4-day6-2026-03-05",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"]
+}
