@@ -5,7 +5,7 @@ export default function HomePage() {
   return (
     <div>
       <h2 className="text-2xl font-bold text-neutral-50 mb-2">My Tools</h2>
-      <p className="text-sm text-neutral-400 mb-8">GitHub 도구 모음 대시보드</p>
+      <p className="text-sm text-neutral-400 mb-8">MCP 서버 대시보드</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {MCP_TOOLS.map((tool) => (
           <McpToolCard key={tool.id} tool={tool} />
