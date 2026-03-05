@@ -106,7 +106,7 @@ async function buildHeaderDark(offsetX, offsetY) {
   // ThemeToggle (달 아이콘)
   const toggleBg = makeRect(724, 18, 28, 28, DARK.neutral800, { radius: 9999 });
   frame.appendChild(toggleBg);
-  const moonIcon = await makeText('🌙', 727, 19, 14, DARK.textSecondary, 'Regular');
+  const moonIcon = await makeText('[dark]', 722, 22, 10, DARK.textSecondary, 'Regular');
   frame.appendChild(moonIcon);
   const toggleLabel = await makeText('ThemeToggle (dark)', 718, 50, 8, DARK.textMuted, 'Regular');
   frame.appendChild(toggleLabel);
@@ -163,7 +163,7 @@ async function buildHeaderLight(offsetX, offsetY) {
   // ThemeToggle (해 아이콘, rotate 12deg 표현)
   const toggleBg = makeRect(724, 18, 28, 28, LIGHT.bgInput, { radius: 9999 });
   frame.appendChild(toggleBg);
-  const sunIcon = await makeText('☀️', 727, 19, 14, LIGHT.textSecondary, 'Regular');
+  const sunIcon = await makeText('[light]', 722, 22, 10, LIGHT.textSecondary, 'Regular');
   frame.appendChild(sunIcon);
   const toggleLabel = await makeText('ThemeToggle (light, rotate 12deg)', 694, 50, 8, LIGHT.textMuted, 'Regular');
   frame.appendChild(toggleLabel);
@@ -202,7 +202,7 @@ async function buildThemeToggleStates(offsetX, offsetY) {
   frame.appendChild(darkLabel);
   const moonBg = makeRect(56, 76, 32, 32, DARK.neutral800, { radius: 9999 });
   frame.appendChild(moonBg);
-  const moon = await makeText('🌙', 60, 78, 18, DARK.textSecondary, 'Regular');
+  const moon = await makeText('DARK', 58, 83, 9, DARK.textSecondary, 'Bold');
   frame.appendChild(moon);
   const darkSpec = await makeText('rotate(0deg)', 38, 116, 9, DARK.textMuted, 'Regular');
   frame.appendChild(darkSpec);
@@ -216,7 +216,7 @@ async function buildThemeToggleStates(offsetX, offsetY) {
   frame.appendChild(lightLabel);
   const sunBg = makeRect(236, 76, 32, 32, LIGHT.bgInput, { radius: 9999 });
   frame.appendChild(sunBg);
-  const sun = await makeText('☀️', 240, 78, 18, LIGHT.textSecondary, 'Regular');
+  const sun = await makeText('LIGHT', 236, 83, 9, LIGHT.textSecondary, 'Bold');
   frame.appendChild(sun);
   const lightSpec = await makeText('rotate(12deg)', 218, 116, 9, LIGHT.textMuted, 'Regular');
   frame.appendChild(lightSpec);
@@ -346,6 +346,7 @@ figma.ui.onmessage = async (msg) => {
         break;
     }
   } catch (err) {
-    figma.notify('오류: ' + err.message, { error: true });
+    const msg2 = err instanceof Error ? err.message : String(err);
+    figma.notify('오류: ' + msg2, { error: true });
   }
 };
