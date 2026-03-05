@@ -24,8 +24,8 @@ export function Navigation() {
             className={[
               'px-4 py-2 rounded-md text-sm font-medium transition-all duration-150',
               isActive
-                ? 'bg-primary-900 text-primary-300 font-semibold'
-                : 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-50',
+                ? 'bg-primary-50 dark:bg-primary-900 text-primary-300 font-semibold'
+                : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-50',
             ].join(' ')}
           >
             {label}

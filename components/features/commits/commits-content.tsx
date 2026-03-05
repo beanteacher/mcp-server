@@ -60,16 +60,16 @@ export function CommitsContent() {
       <div className="flex items-center gap-3 mb-6">
         <BackButton />
         <div>
-          <h2 className="text-lg font-semibold text-neutral-50">
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
             Git 커밋 타임라인
             {query && commits.length > 0 && (
-              <span className="ml-2 text-sm font-normal text-neutral-400">
+              <span className="ml-2 text-sm font-normal text-neutral-500 dark:text-neutral-400">
                 ({fetchAll ? '전체' : `최근 ${query.limit}개`} · {commits.length}건)
               </span>
             )}
           </h2>
           {query?.repo && (
-            <p className="text-xs text-neutral-400 mt-0.5">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
               {query.repo}
               {query.author && <span className="ml-2 font-medium text-primary-300">@{query.author}</span>}
             </p>
@@ -95,12 +95,18 @@ export function CommitsContent() {
       {!isLoading && !error &&
         Object.entries(grouped).map(([date, dayCommits]) => (
           <div key={date} className="mb-6">
-            <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-3">
+            <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-3">
               {date}
             </p>
-            <div className="bg-surface-card border border-neutral-800 rounded-xl px-5 divide-y divide-neutral-800">
-              {dayCommits.map((commit) => (
-                <CommitCard key={commit.sha} commit={commit} />
+            <div className="bg-white dark:bg-surface-card border border-neutral-200 dark:border-neutral-800 rounded-xl px-5 divide-y divide-neutral-200 dark:divide-neutral-800">
+              {dayCommits.map((commit, index) => (
+                <div
+                  key={commit.sha}
+                  className="animate-fade-up"
+                  style={{ animationDelay: `${index * 0.04}s` }}
+                >
+                  <CommitCard commit={commit} />
+                </div>
               ))}
             </div>
           </div>
@@ -118,7 +124,7 @@ export function CommitsContent() {
             <button
               type="button"
               onClick={() => setPage(safePage - 1)}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-neutral-800 transition-colors text-neutral-600 hover:text-neutral-50"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-400 dark:text-neutral-600 hover:text-neutral-900 dark:hover:text-neutral-50"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -127,14 +133,14 @@ export function CommitsContent() {
           ) : (
             <span className="w-8 h-8" />
           )}
-          <span className="text-sm text-neutral-400">
+          <span className="text-sm text-neutral-500 dark:text-neutral-400">
             {safePage} / {totalPages}
           </span>
           {safePage < totalPages ? (
             <button
               type="button"
               onClick={() => setPage(safePage + 1)}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-neutral-800 transition-colors text-neutral-600 hover:text-neutral-50"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-400 dark:text-neutral-600 hover:text-neutral-900 dark:hover:text-neutral-50"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />

@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     './src/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
@@ -72,6 +73,26 @@ const config: Config = {
         md: '0 4px 6px rgba(0,0,0,0.5)',
         lg: '0 10px 15px rgba(0,0,0,0.5)',
         xl: '0 20px 25px rgba(0,0,0,0.6)',
+      },
+
+      animation: {
+        'slide-down': 'slideDown 0.2s ease-out',
+        'fade-in':    'fadeIn 0.25s ease-out',
+        'fade-up':    'fadeUp 0.3s ease-out both',
+      },
+      keyframes: {
+        slideDown: {
+          from: { opacity: '0', transform: 'translateY(-8px)' },
+          to:   { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeIn: {
+          from: { opacity: '0' },
+          to:   { opacity: '1' },
+        },
+        fadeUp: {
+          from: { opacity: '0', transform: 'translateY(8px)' },
+          to:   { opacity: '1', transform: 'translateY(0)' },
+        },
       },
     },
   },

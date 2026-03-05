@@ -6,7 +6,7 @@
 - **경로**: ..\mcp-server
 - **GitHub**: https://github.com/beanteacher/mcp-server
 - **스택**: Next.js 14 (App Router), TypeScript, Tailwind CSS, Gemini API
-- **현재 브랜치**: main
+- **현재 브랜치**: feature/sprint4-dark-light-mode
 
 ### Figma URL
 - Design System: https://www.figma.com/design/CO3vH7wRPIYlAUXFVTiWaa/Design-System
@@ -47,6 +47,17 @@
   - commit-search-form placeholder 한글화 ("저장소 (소유자/레포명)"), limit 기본값 0
   - daily-summary-form placeholder 한글화
   - next build 성공 (에러 0건)
+- **Sprint 4**: 완료 ✅ (2026-03-05, branch: feature/sprint4-dark-light-mode)
+  - next-themes 설치, tailwind.config.ts darkMode: 'class' 추가
+  - app/providers.tsx 신규 (ThemeProvider, defaultTheme: 'dark')
+  - components/ThemeToggle.tsx 신규 (달/해 SVG, mounted 가드, rotation 효과)
+  - app/layout.tsx Providers 래핑, suppressHydrationWarning, animate-fade-in
+  - globals.css 라이트 기본값 (#F8FAFC bg, #0A0F1E text) + transition 0.3s
+  - tailwind.config.ts keyframes/animation 추가 (slide-down, fade-in, fade-up)
+  - 14개 컴포넌트 dark: prefix 전체 적용 (라이트↔다크 색상 매핑)
+  - 모바일 메뉴 animate-slide-down, 커밋 카드 stagger fade-up (0.04s×index)
+  - McpToolCard group-hover:scale-110, 폼 버튼 active:scale-95
+  - npx tsc --noEmit 에러 0건, next build 성공
 
 ### 계획 문서 (주의: .omc/는 .gitignore 대상)
 - MASTER_PLAN.md: .omc/plans/MASTER_PLAN.md

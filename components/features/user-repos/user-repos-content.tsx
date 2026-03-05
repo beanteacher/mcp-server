@@ -19,7 +19,7 @@ export function UserReposContent() {
       {/* 뒤로가기 + 제목 */}
       <div className="flex items-center gap-3 mb-6">
         <BackButton />
-        <h2 className="text-lg font-semibold text-neutral-50">유저 레포지토리 목록</h2>
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">유저 레포지토리 목록</h2>
       </div>
 
       {/* 유저명 입력 폼 */}
@@ -39,26 +39,26 @@ export function UserReposContent() {
       {/* 레포 목록 */}
       {!isLoading && repos.length > 0 && (
         <>
-          <p className="text-xs text-neutral-400 mb-3">총 {repos.length}개의 레포지토리</p>
-          <div className="bg-surface-card border border-neutral-800 rounded-xl divide-y divide-neutral-800">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">총 {repos.length}개의 레포지토리</p>
+          <div className="bg-white dark:bg-surface-card border border-neutral-200 dark:border-neutral-800 rounded-xl divide-y divide-neutral-200 dark:divide-neutral-800">
             {repos.map((repo) => (
               <a
                 key={repo.name}
                 href={repo.html_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-start justify-between px-5 py-4 hover:bg-neutral-800 transition-colors"
+                className="flex items-start justify-between px-5 py-4 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               >
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-primary-300 truncate">{repo.name}</p>
                   {repo.description && (
-                    <p className="text-xs text-neutral-400 mt-0.5 truncate">{repo.description}</p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">{repo.description}</p>
                   )}
-                  <p className="text-xs text-neutral-600 mt-1">{repo.updated_at.slice(0, 10)}</p>
+                  <p className="text-xs text-neutral-400 dark:text-neutral-600 mt-1">{repo.updated_at.slice(0, 10)}</p>
                 </div>
                 <div className="flex items-center gap-2 ml-4 shrink-0">
                   {repo.language && (
-                    <span className="text-xs text-neutral-400 bg-neutral-800 px-2 py-0.5 rounded-full">
+                    <span className="text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
                       {repo.language}
                     </span>
                   )}
