@@ -52,11 +52,42 @@ function makeRect(x, y, w, h, color, opts) {
   return node;
 }
 
+async function resolveFont(requestedStyle) {
+  const style = requestedStyle || 'Regular';
+  const styleCandidates = [style];
+  let lastError = '';
+
+  if (style === 'SemiBold') {
+    styleCandidates.push('Semi Bold');
+  } else if (style === 'Semi Bold') {
+    styleCandidates.push('SemiBold');
+  }
+
+  if (style !== 'Regular') {
+    styleCandidates.push('Regular');
+  }
+
+  const familyCandidates = ['Inter', 'Integer'];
+
+  for (const family of familyCandidates) {
+    for (const styleName of styleCandidates) {
+      const fontName = { family, style: styleName };
+      try {
+        await figma.loadFontAsync(fontName);
+        return fontName;
+      } catch (err) {
+        lastError = err instanceof Error ? err.message : String(err);
+      }
+    }
+  }
+
+  throw new Error(`폰트 로드 실패: ${familyCandidates.join(', ')} / ${styleCandidates.join(', ')}${lastError ? ` (${lastError})` : ''}`);
+}
+
 async function makeText(content, x, y, size, color, style, opts) {
-  const fontStyle = style || 'Regular';
-  await figma.loadFontAsync({ family: 'Inter', style: fontStyle });
+  const fontName = await resolveFont(style);
   const node = figma.createText();
-  node.fontName = { family: 'Inter', style: fontStyle };
+  node.fontName = fontName;
   node.characters = content;
   node.fontSize = size;
   node.fills = [{ type: 'SOLID', color, opacity: opts && opts.opacity !== undefined ? opts.opacity : 1 }];
