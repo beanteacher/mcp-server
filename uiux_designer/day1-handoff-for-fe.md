@@ -101,7 +101,7 @@ export default config
 ### Header
 ```tsx
 <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-surface-card border-b border-neutral-200/10 px-6 flex items-center">
-  <span className="text-xl font-bold text-primary-500">MCP Tools</span>
+  <span className="text-xl font-bold text-primary-500">MCP Servers</span>
   {/* nav 영역 */}
   {/* avatar 영역 */}
 </header>
