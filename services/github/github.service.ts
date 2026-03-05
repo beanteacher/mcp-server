@@ -24,9 +24,11 @@ export async function getCommits(
   repo: string,
   perPage = 30,
   author?: string,
+  branch?: string,
 ): Promise<GitHubDto.Commit[]> {
   const params = new URLSearchParams({ per_page: String(Math.min(perPage, 100)) });
   if (author) params.set('author', author);
+  if (branch) params.set('sha', branch);
 
   const res = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/commits?${params}`,
@@ -45,6 +47,7 @@ export async function getAllCommits(
   owner: string,
   repo: string,
   author?: string,
+  branch?: string,
 ): Promise<GitHubDto.Commit[]> {
   const all: GitHubDto.Commit[] = [];
   let page = 1;
@@ -52,6 +55,7 @@ export async function getAllCommits(
   while (true) {
     const params = new URLSearchParams({ per_page: '100', page: String(page) });
     if (author) params.set('author', author);
+    if (branch) params.set('sha', branch);
 
     const res = await fetch(
       `https://api.github.com/repos/${owner}/${repo}/commits?${params}`,
@@ -75,13 +79,17 @@ export async function getAllCommits(
 export async function getTodayCommits(
   owner: string,
   repo: string,
+  branch?: string,
 ): Promise<GitHubDto.Commit[]> {
   const now = new Date();
   const kstMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
   const since = new Date(kstMidnight.getTime() - 9 * 60 * 60 * 1000).toISOString();
 
+  const params = new URLSearchParams({ per_page: '50', since });
+  if (branch) params.set('sha', branch);
+
   const res = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/commits?per_page=50&since=${since}`,
+    `https://api.github.com/repos/${owner}/${repo}/commits?${params}`,
     { headers: githubHeaders(), cache: 'no-store' },
   );
 
@@ -123,4 +131,29 @@ export async function getUserRepos(username: string): Promise<GitHubDto.Repo[]> 
   }
 
   return res.json() as Promise<GitHubDto.Repo[]>;
+}
+
+export async function getBranches(owner: string, repo: string): Promise<GitHubDto.Branch[]> {
+  const all: GitHubDto.Branch[] = [];
+  let page = 1;
+
+  while (true) {
+    const params = new URLSearchParams({ per_page: '100', page: String(page) });
+    const res = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/branches?${params}`,
+      { headers: githubHeaders(), cache: 'no-store' },
+    );
+
+    if (!res.ok) {
+      const body: unknown = await res.json().catch(() => ({}));
+      throw new Error(parseErrorMessage(body, res.status));
+    }
+
+    const data = (await res.json()) as GitHubDto.Branch[];
+    all.push(...data);
+    if (data.length < 100) break;
+    page++;
+  }
+
+  return all;
 }

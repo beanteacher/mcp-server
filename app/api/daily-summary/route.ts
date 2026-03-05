@@ -6,6 +6,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = req.nextUrl;
   const repo = searchParams.get('repo') ?? '';
   const model = searchParams.get('model') ?? 'models/gemini-2.5-flash';
+  const branch = searchParams.get('branch') ?? undefined;
   const [owner, repoName] = repo.split('/');
 
   if (!owner || !repoName) {
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const todayCommits = await getTodayCommits(owner, repoName);
+    const todayCommits = await getTodayCommits(owner, repoName, branch);
 
     if (todayCommits.length === 0) {
       return NextResponse.json({ summary: '오늘 커밋 내역이 없습니다.', commitCount: 0 });

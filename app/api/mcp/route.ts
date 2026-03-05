@@ -21,6 +21,10 @@ const TOOLS = [
           type: 'string',
           description: '특정 작성자의 커밋만 조회 (GitHub 유저명 또는 이메일)',
         },
+        branch: {
+          type: 'string',
+          description: '조회할 브랜치명 (미입력 시 기본 브랜치)',
+        },
       },
       required: ['repo'],
     },
@@ -52,6 +56,10 @@ const TOOLS = [
         model: {
           type: 'string',
           description: '사용할 Gemini 모델 ID (기본값: models/gemini-2.5-flash)',
+        },
+        branch: {
+          type: 'string',
+          description: '분석할 브랜치명 (미입력 시 기본 브랜치)',
         },
       },
       required: ['repo'],
@@ -131,9 +139,10 @@ export async function POST(req: NextRequest) {
           const [owner, repoName] = args.repo.split('/');
           const limit = Number(args.limit ?? 30);
           const author = args.author || undefined;
+          const branch = args.branch || undefined;
           const commits = limit === 0
-            ? await getAllCommits(owner, repoName, author)
-            : await getCommits(owner, repoName, limit, author);
+            ? await getAllCommits(owner, repoName, author, branch)
+            : await getCommits(owner, repoName, limit, author, branch);
           const text = commits
             .map(
               (c) =>
@@ -156,7 +165,8 @@ export async function POST(req: NextRequest) {
 
         if (name === 'get_daily_summary') {
           const [owner, repoName] = args.repo.split('/');
-          const todayCommits = await getTodayCommits(owner, repoName);
+          const branch = args.branch || undefined;
+          const todayCommits = await getTodayCommits(owner, repoName, branch);
           if (todayCommits.length === 0) {
             return respond({
               content: [{ type: 'text', text: '오늘 커밋 내역이 없습니다.' }],

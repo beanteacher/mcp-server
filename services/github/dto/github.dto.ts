@@ -37,6 +37,11 @@ export namespace GitHubDto {
     private: boolean;
   };
 
+  export type Branch = {
+    name: string;
+    protected: boolean;
+  };
+
   export type ErrorBody = {
     message?: string;
   };
