@@ -8,11 +8,12 @@ import { useCommits } from '@/hooks/use-commits';
 import { LoadingState } from '@/components/LoadingState';
 import { ErrorState } from '@/components/ErrorState';
 import { EmptyState } from '@/components/EmptyState';
-import type { GitHubDto } from '@/services/github/dto/github.dto';
+import type { GitHubDto } from '@/feature/github/dto';
 
 interface CommitQuery {
   repo: string;
   author?: string;
+  branch?: string;
   limit: number;
 }
 
@@ -39,6 +40,7 @@ export function CommitsContent() {
   const { commits, isLoading, error } = useCommits({
     repo: query?.repo ?? '',
     author: query?.author,
+    branch: query?.branch,
     limit: query?.limit ?? 0,
     refreshKey,
   });
@@ -71,6 +73,7 @@ export function CommitsContent() {
           {query?.repo && (
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
               {query.repo}
+              {query.branch && <span className="ml-2 font-medium text-primary-300">#{query.branch}</span>}
               {query.author && <span className="ml-2 font-medium text-primary-300">@{query.author}</span>}
             </p>
           )}

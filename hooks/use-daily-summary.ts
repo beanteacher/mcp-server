@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 interface UseDailySummaryParams {
   repo: string;
+  branch?: string;
   model?: string;
   enabled?: boolean;
   refreshKey?: number;
@@ -22,13 +23,14 @@ interface CachedResult {
 /** 브라우저 세션 동안 유지되는 메모리 캐시 */
 const summaryCache = new Map<string, CachedResult>();
 
-function getCacheKey(repo: string, model: string): string {
+function getCacheKey(repo: string, branch: string, model: string): string {
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  return `${repo}::${model}::${today}`;
+  return `${repo}::${branch}::${model}::${today}`;
 }
 
 export function useDailySummary({
   repo,
+  branch = '',
   model = 'models/gemini-2.5-flash',
   enabled = true,
   refreshKey = 0,
@@ -45,7 +47,7 @@ export function useDailySummary({
       return;
     }
 
-    const cacheKey = getCacheKey(repo, model);
+    const cacheKey = getCacheKey(repo, branch, model);
 
     // refreshKey가 증가하면 캐시 무효화 (재시도 버튼)
     if (refreshKey > 0) {
@@ -63,6 +65,7 @@ export function useDailySummary({
 
     // 캐시 미스 → Gemini API 호출
     const params = new URLSearchParams({ repo, model });
+    if (branch) params.set('branch', branch);
     setIsLoading(true);
     setError(null);
 
@@ -78,7 +81,7 @@ export function useDailySummary({
         setError(e instanceof Error ? e.message : '알 수 없는 오류');
       })
       .finally(() => setIsLoading(false));
-  }, [enabled, repo, model, refreshKey]);
+  }, [enabled, repo, branch, model, refreshKey]);
 
   return { summary, commitCount, isLoading, error };
 }

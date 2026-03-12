@@ -59,7 +59,7 @@ function MarkdownLine({ line, index }: { line: string; index: number }) {
 }
 
 export function DailySummaryContent() {
-  const [repo, setRepo] = useState('');
+  const [query, setQuery] = useState<{ repo: string; branch?: string } | null>(null);
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
   const [showModels, setShowModels] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -71,7 +71,13 @@ export function DailySummaryContent() {
     commitCount,
     isLoading: summaryLoading,
     error: summaryError,
-  } = useDailySummary({ repo, model: selectedModel, enabled: !showModels && repo !== '', refreshKey });
+  } = useDailySummary({
+    repo: query?.repo ?? '',
+    branch: query?.branch,
+    model: selectedModel,
+    enabled: !showModels && query?.repo !== undefined,
+    refreshKey,
+  });
 
   const isLoading = showModels ? modelsLoading : summaryLoading;
   const error = showModels ? modelsError : summaryError;
@@ -151,9 +157,9 @@ export function DailySummaryContent() {
           </div>
 
           {/* 저장소 입력 폼 */}
-          <DailySummaryForm onSearch={setRepo} />
+          <DailySummaryForm onSearch={setQuery} />
 
-          {!repo && (
+          {!query?.repo && (
             <EmptyState message="저장소를 입력하세요" description="저장소를 입력하고 분석하기 버튼을 누르세요." />
           )}
 
@@ -169,6 +175,11 @@ export function DailySummaryContent() {
                   <span className="text-xs bg-primary-50 dark:bg-primary-900 text-primary-300 px-2 py-1 rounded-full font-medium">
                     오늘 커밋 {commitCount}건 분석
                   </span>
+                  {query?.branch && (
+                    <span className="text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 px-2 py-1 rounded-full font-medium">
+                      {query.branch} 브랜치
+                    </span>
+                  )}
                   <span className="text-xs text-neutral-500 dark:text-neutral-400">
                     {new Date().toLocaleDateString('ko-KR', {
                       year: 'numeric',
