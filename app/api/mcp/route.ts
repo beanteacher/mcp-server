@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCommits, getAllCommits, getTodayCommits, getCommitDetail, getUserRepos } from '@/services/github/github.service';
+import { getCommits, getAllCommits, getTodayCommits, getCommitDetail, getUserRepos } from '@/feature/github/service';
 import { analyzeDailyWork } from '@/lib/gemini';
 
 const TOOLS = [

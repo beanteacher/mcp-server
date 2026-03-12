@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { GitHubDto } from '@/services/github/dto/github.dto';
+import type { GitHubDto } from '@/feature/github/dto';
 
 interface UseCommitsParams {
   repo: string;

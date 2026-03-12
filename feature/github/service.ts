@@ -1,4 +1,4 @@
-import type { GitHubDto } from './dto/github.dto';
+import type { GitHubDto } from './dto';
 
 function githubHeaders(): Record<string, string> {
   const headers: Record<string, string> = {

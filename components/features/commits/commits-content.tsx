@@ -8,7 +8,7 @@ import { useCommits } from '@/hooks/use-commits';
 import { LoadingState } from '@/components/LoadingState';
 import { ErrorState } from '@/components/ErrorState';
 import { EmptyState } from '@/components/EmptyState';
-import type { GitHubDto } from '@/services/github/dto/github.dto';
+import type { GitHubDto } from '@/feature/github/dto';
 
 interface CommitQuery {
   repo: string;

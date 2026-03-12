@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCommits, getAllCommits } from '@/services/github/github.service';
+import { getCommits, getAllCommits } from '@/feature/github/service';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = req.nextUrl;

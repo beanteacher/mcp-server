@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTodayCommits, getCommitDetail } from '@/services/github/github.service';
+import { getTodayCommits, getCommitDetail } from '@/feature/github/service';
 import { analyzeDailyWork } from '@/lib/gemini';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
