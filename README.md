@@ -1,70 +1,71 @@
-# Getting Started with Create React App
+# MCP Server
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+업무 자동화를 위한 MCP(Model Context Protocol) 서버.
+Claude 등 AI 에이전트가 GitHub, 메시지 발송, Java 에이전트 진단 등 업무 도구를 직접 호출할 수 있도록 지원한다.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 구현된 MCP 도구
 
-### `npm start`
+### GitHub
+| 도구 | 설명 |
+|------|------|
+| `get_commits` | 저장소의 커밋 목록 조회 (작성자·브랜치 필터, 전체 조회 지원) |
+| `get_user_repos` | GitHub 유저의 public 레포지토리 목록 조회 |
+| `get_daily_summary` | 오늘 커밋된 변경사항을 Gemini AI로 분석해 작업 정리본 반환 |
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 메시지 발송
+| 도구 | 설명 |
+|------|------|
+| `send_sms_tran_alarm` | SMS·RCS·알림톡 발송 요청을 DB에 적재 |
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Java 에이전트 진단
+| 도구 | 설명 |
+|------|------|
+| `agent_analyze_config` | setting.cmd/sh, agent.conf, jdbc.conf 파싱 및 요약 |
+| `agent_analyze_logs` | logs/ 디렉토리 스캔 — ERROR/WARN 분류 및 원인 추출 |
+| `agent_diagnose` | 설정 + 로그 + 파일 존재 여부를 종합 분석해 이슈 및 권고 조치 반환 |
+| `agent_test_db` | jdbc.conf 기반 실제 DB 연결 테스트 |
+| `agent_insert_sample` | 지정 테이블에 샘플 메시지 INSERT (발송 테스트용) |
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## agent_diagnose 탐지 항목
 
-### `npm run build`
+| category | 유형 | 설명 |
+|----------|------|------|
+| `DB_CONNECTION_FAILED` | 로그 | DB 연결 실패 감지 |
+| `TABLE_NOT_FOUND` | 로그 | 테이블 없음 감지 |
+| `RELAY_CONNECTION_FAILED` | 로그 | 릴레이 서버 연결 실패 감지 |
+| `JVM_MEMORY` | 로그 | JVM 메모리 부족 감지 |
+| `CLASSPATH_ERROR` | 로그 | 클래스 로드 실패 감지 (JAR 경로 오류 등) |
+| `NO_ACTIVE_MESSAGE_TYPE` | 설정 | smsUse/lmsUse/mmsUse/kkoUse 모두 비활성 |
+| `JAVA_HOME_MISSING` | 설정 | JAVA_HOME 미설정 |
+| `UNKNOWN_DB_TYPE` | 설정 | DB 타입 판별 불가 |
+| `JAVA_EXECUTABLE_NOT_FOUND` | 파일 | java.exe 경로 없음 |
+| `JAR_NOT_FOUND` | 파일 | JAR_PATH의 jar 파일 없음 |
+| `MAPPER_NOT_FOUND` | 파일 | mapper XML 파일 없음 |
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 실행
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+# 개발 (tsx로 직접 실행)
+npx tsx mcp-stdio.ts
+```
 
-### `npm run eject`
+## 프로젝트 구조
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```
+mcp-stdio.ts          # 서버 진입점 (stdio transport)
+tools.ts              # MCP 도구 스키마 정의
+handler.ts            # 도구별 실행 로직
+feature/
+├── agent/            # Java 에이전트 진단
+│   ├── agent.service.ts
+│   ├── agent.dto.ts
+│   └── parsers/
+├── github/           # GitHub API 연동
+└── message/          # 메시지 발송
+```

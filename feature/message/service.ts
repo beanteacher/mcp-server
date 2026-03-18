@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '../../lib/prisma';
 
 const CHANNEL_TO_MSG_TYPE = {
   sms: 'SMS',

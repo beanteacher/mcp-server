@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { AgentDto } from '../agent.dto';
+import { AgentDto } from '../dto';
 
 function stripQuotes(value: string): string {
   return value.replace(/^['"]|['"]$/g, '');
@@ -20,7 +20,7 @@ function resolveVariables(value: string, env: Map<string, string>): string {
 }
 
 export async function parseSettingSh(agentHome: string): Promise<AgentDto.SettingResult> {
-  const filePath = path.resolve(agentHome, 'setting.sh');
+  const filePath = path.resolve(agentHome, 'bin_linux', 'setting.sh');
 
   const result: AgentDto.SettingResult = { agentHome };
 

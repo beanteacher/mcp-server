@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { AgentDto } from '../agent.dto';
+import { AgentDto } from '../dto';
 
 function resolveVariables(value: string, env: Map<string, string>): string {
   let resolved = value;
@@ -13,7 +13,7 @@ function resolveVariables(value: string, env: Map<string, string>): string {
 }
 
 export async function parseSettingCmd(agentHome: string): Promise<AgentDto.SettingResult> {
-  const filePath = path.resolve(agentHome, 'setting.cmd');
+  const filePath = path.resolve(agentHome, 'bin_win', 'setting.cmd');
 
   const result: AgentDto.SettingResult = { agentHome };
 

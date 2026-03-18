@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
-import { AgentDto } from './agent.dto';
+import { AgentDto } from './dto';
 import { parseSettingCmd } from './parsers/setting-cmd.parser';
 import { parseSettingSh } from './parsers/setting-sh.parser';
 import { parseAgentConf } from './parsers/agent-conf.parser';
@@ -62,11 +62,12 @@ export async function analyzeConfig(
     parseJdbcConf(resolvedHome),
   ]);
 
+  const isEnabled = (v?: string) => v === 'Y' || v === 'true';
   const activeMessageTypes: string[] = [];
-  if (agentConf.smsUse === 'Y') activeMessageTypes.push('SMS');
-  if (agentConf.lmsUse === 'Y') activeMessageTypes.push('LMS');
-  if (agentConf.mmsUse === 'Y') activeMessageTypes.push('MMS');
-  if (agentConf.kkoUse === 'Y') activeMessageTypes.push('KKO');
+  if (isEnabled(agentConf.smsUse)) activeMessageTypes.push('SMS');
+  if (isEnabled(agentConf.lmsUse)) activeMessageTypes.push('LMS');
+  if (isEnabled(agentConf.mmsUse)) activeMessageTypes.push('MMS');
+  if (isEnabled(agentConf.kkoUse)) activeMessageTypes.push('KKO');
 
   const { password: _pw, ...jdbcWithoutPassword } = jdbcConf;
   const maskedJdbc = { ...jdbcWithoutPassword, password: '****' as const };
@@ -105,6 +106,14 @@ function classifyLine(line: string): AgentDto.LogEntry['category'] {
   }
   if (/OutOfMemoryError/i.test(line) || /GC overhead limit exceeded/i.test(line)) {
     return 'JVM_MEMORY';
+  }
+  if (
+    /Could not find or load main class/i.test(line) ||
+    /ClassNotFoundException/i.test(line) ||
+    /NoClassDefFoundError/i.test(line) ||
+    /Error: .*class.*찾거나 로드/i.test(line)
+  ) {
+    return 'CLASSPATH_ERROR';
   }
   return 'UNKNOWN';
 }
@@ -197,6 +206,14 @@ export async function diagnose(
     });
   }
 
+  if (summary['CLASSPATH_ERROR']) {
+    issues.push({
+      severity: 'ERROR',
+      category: 'CLASSPATH_ERROR',
+      message: `클래스 로드 실패 ${summary['CLASSPATH_ERROR']}건 감지. JAR_PATH 또는 SERVICE_START_CLASS 설정 확인 필요${config.setting.jarPath ? ` (현재 JAR_PATH: ${config.setting.jarPath})` : ''}`,
+    });
+  }
+
   // 설정 기반 진단
   if (config.activeMessageTypes.length === 0) {
     issues.push({
@@ -223,6 +240,52 @@ export async function diagnose(
     });
   }
 
+  // 파일 존재 검증
+  const resolvedHome = path.resolve(agentHome);
+
+  // 1. java 실행 파일 존재 여부
+  if (config.setting.javaHome) {
+    const javaHome = config.setting.javaHome.replace(/"/g, '');
+    const javaExe = config.os === 'windows'
+      ? path.join(javaHome, 'bin', 'java.exe')
+      : path.join(javaHome, 'bin', 'java');
+    if (!fs.existsSync(javaExe)) {
+      issues.push({
+        severity: 'ERROR',
+        category: 'JAVA_EXECUTABLE_NOT_FOUND',
+        message: `java 실행 파일이 존재하지 않습니다: ${javaExe}`,
+      });
+    }
+  }
+
+  // 2. JAR 파일 존재 여부
+  if (config.setting.jarPath) {
+    const missingJars = config.setting.jarPath
+      .split(';')
+      .map((p) => p.replace(/"/g, '').trim())
+      .filter((p) => p.endsWith('.jar'))
+      .filter((p) => !fs.existsSync(p));
+    for (const jar of missingJars) {
+      issues.push({
+        severity: 'ERROR',
+        category: 'JAR_NOT_FOUND',
+        message: `JAR 파일이 존재하지 않습니다: ${jar}`,
+      });
+    }
+  }
+
+  // 3. mapper XML 존재 여부
+  if (config.jdbcConf.mapperLocation) {
+    const mapperPath = path.resolve(resolvedHome, config.jdbcConf.mapperLocation.replace(/^\.\.\//, ''));
+    if (!fs.existsSync(mapperPath)) {
+      issues.push({
+        severity: 'ERROR',
+        category: 'MAPPER_NOT_FOUND',
+        message: `mapper XML 파일이 존재하지 않습니다: ${mapperPath}`,
+      });
+    }
+  }
+
   return {
     config,
     logSummary: summary,
@@ -240,8 +303,9 @@ export async function analyzeLogs(agentHome: string): Promise<AgentDto.LogResult
 
   const logFiles = fs
     .readdirSync(logsDir)
-    .filter((f) => f.endsWith('.log'))
-    .map((f) => path.join(logsDir, f));
+    .filter((f) => !/\d{8}|\d{4}-\d{2}-\d{2}/.test(f))
+    .map((f) => path.join(logsDir, f))
+    .filter((f) => fs.statSync(f).isFile());
 
   const allEntries = (await Promise.all(logFiles.map(parseLogFile))).flat();
 

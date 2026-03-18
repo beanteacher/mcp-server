@@ -49,6 +49,7 @@ export namespace AgentDto {
       | 'TABLE_NOT_FOUND'
       | 'RELAY_CONNECTION_FAILED'
       | 'JVM_MEMORY'
+      | 'CLASSPATH_ERROR'
       | 'UNKNOWN';
   }
 

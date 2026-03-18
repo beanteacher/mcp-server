@@ -32,7 +32,7 @@ export async function getCommits(
 
   const res = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/commits?${params}`,
-    { headers: githubHeaders(), next: { revalidate: 60 } },
+    { headers: githubHeaders() },
   );
 
   if (!res.ok) {
@@ -59,7 +59,7 @@ export async function getAllCommits(
 
     const res = await fetch(
       `https://api.github.com/repos/${owner}/${repo}/commits?${params}`,
-      { headers: githubHeaders(), cache: 'no-store' },
+      { headers: githubHeaders() },
     );
 
     if (!res.ok) {
@@ -90,7 +90,7 @@ export async function getTodayCommits(
 
   const res = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/commits?${params}`,
-    { headers: githubHeaders(), cache: 'no-store' },
+    { headers: githubHeaders() },
   );
 
   if (!res.ok) {
@@ -108,7 +108,7 @@ export async function getCommitDetail(
 ): Promise<GitHubDto.CommitDetail> {
   const res = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/commits/${sha}`,
-    { headers: githubHeaders(), cache: 'no-store' },
+    { headers: githubHeaders() },
   );
 
   if (!res.ok) {
@@ -122,7 +122,7 @@ export async function getCommitDetail(
 export async function getUserRepos(username: string): Promise<GitHubDto.Repo[]> {
   const res = await fetch(
     `https://api.github.com/users/${username}/repos?per_page=100&sort=updated`,
-    { headers: githubHeaders(), next: { revalidate: 60 } },
+    { headers: githubHeaders() },
   );
 
   if (!res.ok) {
@@ -141,7 +141,7 @@ export async function getBranches(owner: string, repo: string): Promise<GitHubDt
     const params = new URLSearchParams({ per_page: '100', page: String(page) });
     const res = await fetch(
       `https://api.github.com/repos/${owner}/${repo}/branches?${params}`,
-      { headers: githubHeaders(), cache: 'no-store' },
+      { headers: githubHeaders() },
     );
 
     if (!res.ok) {

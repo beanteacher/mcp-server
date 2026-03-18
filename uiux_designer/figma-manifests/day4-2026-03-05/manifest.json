@@ -1,8 +1,0 @@
-{
-  "name": "MCP Dashboard - Sprint2 Day4 Auto Frames",
-  "api": "1.0.0",
-  "id": "sprint2-day4-2026-03-05",
-  "main": "code.js",
-  "ui": "ui.html",
-  "editorType": ["figma"]
-}
