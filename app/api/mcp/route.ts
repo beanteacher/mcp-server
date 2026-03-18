@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCommits, getAllCommits, getTodayCommits, getCommitDetail, getUserRepos } from '@/feature/github/service';
 import { analyzeDailyWork } from '@/lib/gemini';
 import { enqueueTranAlarm } from '@/feature/message/service';
+import { analyzeConfig, analyzeLogs, diagnose, testDb, insertSample } from '@/feature/agent/agent.service';
 
 const TOOLS = [
   {
@@ -115,6 +116,67 @@ const TOOLS = [
         },
       },
       required: ['channel', 'msgSubType', 'destaddr', 'sendMsg'],
+    },
+  },
+  {
+    name: 'agent_analyze_config',
+    description: '에이전트 설정 파일(setting.cmd/sh, agent.conf, jdbc.conf)을 파싱해 요약합니다.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agentHome: { type: 'string', description: '에이전트 루트 경로' },
+        os: { type: 'string', description: 'windows|linux (미입력 시 자동 감지)' },
+      },
+      required: ['agentHome'],
+    },
+  },
+  {
+    name: 'agent_analyze_logs',
+    description: 'logs/ 디렉토리를 스캔해 ERROR/WARN 항목을 추출하고 분류합니다.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agentHome: { type: 'string', description: '에이전트 루트 경로' },
+      },
+      required: ['agentHome'],
+    },
+  },
+  {
+    name: 'agent_diagnose',
+    description: '설정과 로그를 종합 분석해 문제 원인과 권고 조치를 반환합니다.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agentHome: { type: 'string', description: '에이전트 루트 경로' },
+        os: { type: 'string', description: 'windows|linux (미입력 시 자동 감지)' },
+      },
+      required: ['agentHome'],
+    },
+  },
+  {
+    name: 'agent_test_db',
+    description: 'jdbc.conf 정보를 기반으로 실제 DB 연결을 테스트합니다.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agentHome: { type: 'string', description: '에이전트 루트 경로' },
+      },
+      required: ['agentHome'],
+    },
+  },
+  {
+    name: 'agent_insert_sample',
+    description: 'agent.conf 테이블명 기반으로 샘플 메시지를 INSERT해 발송 테스트를 지원합니다.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agentHome: { type: 'string', description: '에이전트 루트 경로' },
+        messageType: { type: 'string', description: 'sms|lms|mms|kko (기본 sms)' },
+        destaddr: { type: 'string', description: '수신 번호 (기본 01000000000)' },
+        sendMsg: { type: 'string', description: "[테스트] 메시지 본문 (기본 '[테스트] 샘플 메시지')" },
+        count: { type: 'number', description: '삽입 건수 (기본 1, 최대 10)' },
+      },
+      required: ['agentHome'],
     },
   },
 ];
@@ -295,6 +357,55 @@ export async function POST(req: NextRequest) {
           ].join('\n');
 
           return respond({ content: [{ type: 'text', text }] });
+        }
+
+        if (name === 'agent_analyze_config') {
+          const agentHome = readRequiredString(args, 'agentHome');
+          const os = readOptionalString(args, 'os') as 'windows' | 'linux' | undefined;
+          const result = await analyzeConfig(agentHome, os);
+          return respond({ content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] });
+        }
+
+        if (name === 'agent_analyze_logs') {
+          const agentHome = readRequiredString(args, 'agentHome');
+          const result = await analyzeLogs(agentHome);
+          return respond({ content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] });
+        }
+
+        if (name === 'agent_diagnose') {
+          const agentHome = readRequiredString(args, 'agentHome');
+          const os = readOptionalString(args, 'os') as 'windows' | 'linux' | undefined;
+          const result = await diagnose(agentHome, os);
+          return respond({ content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] });
+        }
+
+        if (name === 'agent_test_db') {
+          const agentHome = readRequiredString(args, 'agentHome');
+          const result = await testDb(agentHome);
+          const lines = [
+            `dbType: ${result.dbType}`,
+            `url: ${result.url}`,
+            `connected: ${result.connected}`,
+            `elapsedMs: ${result.elapsedMs}`,
+            ...(result.error ? [`error: ${result.error}`] : []),
+          ];
+          return respond({ content: [{ type: 'text', text: lines.join('\n') }] });
+        }
+
+        if (name === 'agent_insert_sample') {
+          const agentHome = readRequiredString(args, 'agentHome');
+          const result = await insertSample(agentHome, {
+            messageType: readOptionalString(args, 'messageType'),
+            destaddr: readOptionalString(args, 'destaddr'),
+            sendMsg: readOptionalString(args, 'sendMsg'),
+            count: args['count'] !== undefined ? readNumber(args, 'count', 1) : undefined,
+          });
+          const lines = [
+            `tableName: ${result.tableName}`,
+            `insertedCount: ${result.insertedCount}`,
+            `insertedPks: ${result.insertedPks.join(', ')}`,
+          ];
+          return respond({ content: [{ type: 'text', text: lines.join('\n') }] });
         }
 
         return jsonErr(id, -32602, `Unknown tool: ${name}`);
