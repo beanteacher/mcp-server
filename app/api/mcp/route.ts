@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCommits, getAllCommits, getTodayCommits, getCommitDetail, getUserRepos } from '@/feature/github/service';
 import { analyzeDailyWork } from '@/lib/gemini';
+import { enqueueTranAlarm } from '@/feature/message/service';
 
 const TOOLS = [
   {
@@ -65,6 +66,57 @@ const TOOLS = [
       required: ['repo'],
     },
   },
+  {
+    name: 'send_sms_tran_alarm',
+    description: '문자/SMS, RCS, 알림톡 발송을 위해 send_sms_tran_alarm 테이블에 전송 요청을 적재합니다.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        channel: {
+          type: 'string',
+          enum: ['sms', 'rcs', 'atalk'],
+          description: '발송 채널 (sms | rcs | atalk)',
+        },
+        msgSubType: {
+          type: 'string',
+          description: '메시지 세부 유형 (최대 5자)',
+        },
+        destaddr: {
+          type: 'string',
+          description: '착신 번호',
+        },
+        callback: {
+          type: 'string',
+          description: '회신 번호 (미입력 시 MCP_TRAN_DEFAULT_CALLBACK 사용)',
+        },
+        sendMsg: {
+          type: 'string',
+          description: '메시지 본문 (최대 300자)',
+        },
+        userId: {
+          type: 'string',
+          description: '발송 사용자 ID (미입력 시 MCP_TRAN_DEFAULT_USER_ID 사용)',
+        },
+        kisaCode: {
+          type: 'string',
+          description: 'KISA 식별 코드 (미입력 시 MCP_TRAN_DEFAULT_KISA_CODE 사용)',
+        },
+        billCode: {
+          type: 'string',
+          description: '과금 코드 (미입력 시 MCP_TRAN_DEFAULT_BILL_CODE 사용)',
+        },
+        groupId: {
+          type: 'string',
+          description: '그룹 ID (정수 문자열)',
+        },
+        requestDate: {
+          type: 'string',
+          description: '전송 희망 일시(ISO 8601), 미입력 시 현재 시각',
+        },
+      },
+      required: ['channel', 'msgSubType', 'destaddr', 'sendMsg'],
+    },
+  },
 ];
 
 type JsonRpcId = string | number | null;
@@ -92,6 +144,43 @@ function sseOk(id: JsonRpcId, result: unknown) {
       'Cache-Control': 'no-cache',
     },
   });
+}
+
+function readRequiredString(args: Record<string, unknown>, key: string): string {
+  const value = args[key];
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new Error(`${key}는 필수 문자열입니다.`);
+  }
+
+  return value.trim();
+}
+
+function readOptionalString(args: Record<string, unknown>, key: string): string | undefined {
+  const value = args[key];
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+
+  if (typeof value !== 'string') {
+    throw new Error(`${key}는 문자열이어야 합니다.`);
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function readNumber(args: Record<string, unknown>, key: string, fallback: number): number {
+  const value = args[key];
+  if (value === undefined || value === null || value === '') {
+    return fallback;
+  }
+
+  const parsed = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(parsed)) {
+    throw new Error(`${key}는 숫자여야 합니다.`);
+  }
+
+  return parsed;
 }
 
 export async function POST(req: NextRequest) {
@@ -131,15 +220,16 @@ export async function POST(req: NextRequest) {
     case 'tools/call': {
       const { name, arguments: args = {} } = params as {
         name: string;
-        arguments?: Record<string, string>;
+        arguments?: Record<string, unknown>;
       };
 
       try {
         if (name === 'get_commits') {
-          const [owner, repoName] = args.repo.split('/');
-          const limit = Number(args.limit ?? 30);
-          const author = args.author || undefined;
-          const branch = args.branch || undefined;
+          const repo = readRequiredString(args, 'repo');
+          const [owner, repoName] = repo.split('/');
+          const limit = readNumber(args, 'limit', 30);
+          const author = readOptionalString(args, 'author');
+          const branch = readOptionalString(args, 'branch');
           const commits = limit === 0
             ? await getAllCommits(owner, repoName, author, branch)
             : await getCommits(owner, repoName, limit, author, branch);
@@ -153,7 +243,8 @@ export async function POST(req: NextRequest) {
         }
 
         if (name === 'get_user_repos') {
-          const repos = await getUserRepos(args.username);
+          const username = readRequiredString(args, 'username');
+          const repos = await getUserRepos(username);
           const text = repos
             .map(
               (r) =>
@@ -164,8 +255,9 @@ export async function POST(req: NextRequest) {
         }
 
         if (name === 'get_daily_summary') {
-          const [owner, repoName] = args.repo.split('/');
-          const branch = args.branch || undefined;
+          const repo = readRequiredString(args, 'repo');
+          const [owner, repoName] = repo.split('/');
+          const branch = readOptionalString(args, 'branch');
           const todayCommits = await getTodayCommits(owner, repoName, branch);
           if (todayCommits.length === 0) {
             return respond({
@@ -175,8 +267,34 @@ export async function POST(req: NextRequest) {
           const details = await Promise.all(
             todayCommits.slice(0, 10).map((c) => getCommitDetail(owner, repoName, c.sha)),
           );
-          const summary = await analyzeDailyWork(args.repo, details, args.model);
+          const summary = await analyzeDailyWork(repo, details, readOptionalString(args, 'model'));
           return respond({ content: [{ type: 'text', text: summary }] });
+        }
+
+        if (name === 'send_sms_tran_alarm') {
+          const result = await enqueueTranAlarm({
+            channel: readRequiredString(args, 'channel') as 'sms' | 'rcs' | 'atalk',
+            msgSubType: readRequiredString(args, 'msgSubType'),
+            destaddr: readRequiredString(args, 'destaddr'),
+            callback: readOptionalString(args, 'callback'),
+            sendMsg: readRequiredString(args, 'sendMsg'),
+            userId: readOptionalString(args, 'userId'),
+            kisaCode: readOptionalString(args, 'kisaCode'),
+            billCode: readOptionalString(args, 'billCode'),
+            groupId: readOptionalString(args, 'groupId'),
+            requestDate: readOptionalString(args, 'requestDate'),
+          });
+
+          const text = [
+            'send_sms_tran_alarm 적재 성공',
+            `msg_id: ${result.msgId}`,
+            `msg_type: ${result.msgType}`,
+            `msg_sub_type: ${result.msgSubType}`,
+            `destaddr: ${result.destaddr}`,
+            `request_date: ${result.requestDate}`,
+          ].join('\n');
+
+          return respond({ content: [{ type: 'text', text }] });
         }
 
         return jsonErr(id, -32602, `Unknown tool: ${name}`);
