@@ -245,6 +245,30 @@ function readNumber(args: Record<string, unknown>, key: string, fallback: number
   return parsed;
 }
 
+// Streamable HTTP transport: GET endpoint for SSE (server-to-client notifications)
+export async function GET() {
+  const stream = new ReadableStream({
+    start(controller) {
+      // Keep-alive ping every 15s so the connection stays open
+      const timer = setInterval(() => {
+        try {
+          controller.enqueue(new TextEncoder().encode(': ping\n\n'));
+        } catch {
+          clearInterval(timer);
+        }
+      }, 15000);
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    },
+  });
+}
+
 export async function POST(req: NextRequest) {
   const useSSE = req.headers.get('accept')?.includes('text/event-stream') ?? false;
 
