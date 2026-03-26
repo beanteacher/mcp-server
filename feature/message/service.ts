@@ -1,5 +1,23 @@
 import { prisma } from '../../lib/prisma';
 
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+/** Prisma는 Date의 UTC 값을 그대로 DB에 저장하므로, UTC+9 시프트된 Date를 만들어 KST가 저장되게 한다. */
+function toKstNow(): Date {
+  return new Date(Date.now() + KST_OFFSET_MS);
+}
+
+/** Date의 UTC 값이 이미 KST이므로 getUTC* 메서드를 사용한다. */
+function formatKst(date: Date): string {
+  const y = date.getUTCFullYear();
+  const M = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(date.getUTCDate()).padStart(2, '0');
+  const h = String(date.getUTCHours()).padStart(2, '0');
+  const m = String(date.getUTCMinutes()).padStart(2, '0');
+  const s = String(date.getUTCSeconds()).padStart(2, '0');
+  return `${y}-${M}-${d}T${h}:${m}:${s}+09:00`;
+}
+
 const VALID_MSG_TYPES = ['SMS', 'MMS', 'KKO', 'RCS'] as const;
 type MsgType = typeof VALID_MSG_TYPES[number];
 
@@ -24,10 +42,10 @@ function getModel(msgType: MsgType) {
 }
 
 const TABLE_NAMES: Record<MsgType, string> = {
-  SMS: 'mcp_agent_sms_tran',
-  MMS: 'mcp_agent_mms_tran',
-  KKO: 'mcp_agent_kko_tran',
-  RCS: 'mcp_agent_rcs_tran',
+  SMS: 'MCP_AGENT_SMS_TRAN',
+  MMS: 'MCP_AGENT_MMS_TRAN',
+  KKO: 'MCP_AGENT_KKO_TRAN',
+  RCS: 'MCP_AGENT_RCS_TRAN',
 };
 
 export type MessageSendInput = {
@@ -98,7 +116,9 @@ function parseRequestDate(value: string | undefined): Date | undefined {
     throw new Error('requestDate 형식이 올바르지 않습니다. ISO 8601 문자열을 사용하세요.');
   }
 
-  return date;
+  // 입력값에 타임존이 포함되어 있으면 이미 올바른 순간을 가리키므로
+  // DB 저장용으로 KST 시프트만 적용한다.
+  return new Date(date.getTime() + KST_OFFSET_MS);
 }
 
 function parseGroupId(value: string | undefined): number | undefined {
@@ -145,26 +165,41 @@ export async function messageSend(input: MessageSendInput): Promise<MessageSendR
   const kisaCode = ensureOptionalString(input.kisaCode, 'kisaCode', 20) ?? process.env.MCP_TRAN_DEFAULT_KISA_CODE;
   const billCode = ensureOptionalString(input.billCode, 'billCode', 30) ?? process.env.MCP_TRAN_DEFAULT_BILL_CODE;
   const groupId = parseGroupId(input.groupId);
-  const requestDate = parseRequestDate(input.requestDate);
+  const requestDate = parseRequestDate(input.requestDate) ?? toKstNow();
 
-  const model = getModel(msgType);
-  const created = await (model as typeof prisma.mcpAgentSmsTran).create({
-    data: {
-      msgType,
-      msgSubType,
-      destaddr,
-      callback,
-      sendMsg,
-      subject,
-      filePath,
-      fileCount,
-      userId,
-      kisaCode,
-      billCode,
-      groupId,
-      requestDate,
-    },
-  });
+  const kstNow = toKstNow();
+  const commonData = {
+    msgType,
+    msgSubType,
+    destaddr,
+    callback,
+    sendMsg,
+    userId,
+    kisaCode,
+    billCode,
+    groupId,
+    requestDate,
+    createDate: kstNow,
+    updateDate: kstNow,
+  };
+
+  let created: { msgId: bigint; msgType: string; msgSubType: string; destaddr: string; requestDate: Date };
+
+  if (msgType === 'SMS') {
+    created = await prisma.mcpAgentSmsTran.create({ data: commonData });
+  } else if (msgType === 'MMS') {
+    created = await prisma.mcpAgentMmsTran.create({
+      data: { ...commonData, subject, filePath, fileCount },
+    });
+  } else if (msgType === 'KKO') {
+    created = await prisma.mcpAgentKkoTran.create({
+      data: { ...commonData, subject, senderKey: '' },
+    });
+  } else {
+    created = await prisma.mcpAgentRcsTran.create({
+      data: { ...commonData, subject, filePath, fileCount },
+    });
+  }
 
   return {
     msgId: created.msgId.toString(),
@@ -172,6 +207,6 @@ export async function messageSend(input: MessageSendInput): Promise<MessageSendR
     msgSubType: created.msgSubType,
     destaddr: created.destaddr,
     tableName: TABLE_NAMES[msgType],
-    requestDate: created.requestDate.toISOString(),
+    requestDate: formatKst(created.requestDate),
   };
 }
