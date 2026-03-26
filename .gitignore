@@ -37,4 +37,6 @@ next-env.d.ts
 tsconfig.tsbuildinfo
 
 .claude/**
+!.claude/settings.json
+.claude/settings.local.json
 plans/**
