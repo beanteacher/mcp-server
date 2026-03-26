@@ -10,8 +10,7 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
-import { TOOLS } from './tools';
-import { handleTool } from './handler';
+import { ALL_TOOLS, handleTool } from './registry';
 
 async function main() {
   const server = new Server(
@@ -19,7 +18,7 @@ async function main() {
     { capabilities: { tools: {} } },
   );
 
-  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: ALL_TOOLS }));
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args = {} } = request.params;
