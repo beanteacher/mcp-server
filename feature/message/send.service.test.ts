@@ -1,27 +1,25 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Prisma mock 설정 (모듈 로드 전에 mock해야 함)
-vi.mock('../../lib/prisma', () => {
-  const mockCreate = vi.fn().mockImplementation(({ data }) => ({
-    msgId: BigInt(99),
-    msgType: data.msgType,
-    msgSubType: data.msgSubType,
-    destaddr: data.destaddr,
-    requestDate: data.requestDate,
-  }));
+vi.mock('@/lib/prisma', () => {
+  const mockExecuteRawUnsafe = vi.fn().mockResolvedValue(1);
+  const mockQueryRawUnsafe = vi.fn().mockImplementation((sql: string) => {
+    if (sql.includes('LAST_INSERT_ID')) {
+      return Promise.resolve([{ id: BigInt(99) }]);
+    }
+    return Promise.resolve([]);
+  });
 
   return {
     prisma: {
-      mcpAgentSmsTran: { create: mockCreate },
-      mcpAgentMmsTran: { create: mockCreate },
-      mcpAgentKkoTran: { create: mockCreate },
-      mcpAgentRcsTran: { create: mockCreate },
+      $executeRawUnsafe: mockExecuteRawUnsafe,
+      $queryRawUnsafe: mockQueryRawUnsafe,
     },
   };
 });
 
-import { messageSend } from './service';
-import { prisma } from '../../lib/prisma';
+import { messageSend } from './send.service';
+import { prisma } from '@/lib/prisma'; // used in mock verification
 
 describe('messageSend', () => {
   beforeEach(() => {
@@ -155,7 +153,7 @@ describe('messageSend', () => {
     expect(result.requestDate).toContain('+09:00');
   });
 
-  it('Prisma create에 KST 시프트된 Date가 전달', async () => {
+  it('INSERT SQL에 KST 시프트된 Date가 전달', async () => {
     await messageSend({
       msgType: 'SMS',
       msgSubType: 'SMS',
@@ -164,19 +162,21 @@ describe('messageSend', () => {
       sendMsg: '테스트',
     });
 
-    const mockCreate = (prisma.mcpAgentSmsTran.create as ReturnType<typeof vi.fn>);
-    expect(mockCreate).toHaveBeenCalledOnce();
+    const mockExec = (prisma.$executeRawUnsafe as ReturnType<typeof vi.fn>);
+    expect(mockExec).toHaveBeenCalledOnce();
 
-    const calledData = mockCreate.mock.calls[0][0].data;
-    const requestDate: Date = calledData.requestDate;
-    const createDate: Date = calledData.createDate;
+    const callArgs: unknown[] = mockExec.mock.calls[0];
+    // callArgs[0] = SQL string, callArgs[1..] = values
+    // request_date and create_date are among the bound values
+    const dateValues = (callArgs.slice(1) as unknown[]).filter((v): v is Date => v instanceof Date);
 
     // KST 시프트: UTC 기준으로 현재 시각 + 9시간이어야 함
     const nowUtc = Date.now();
     const kstShifted = nowUtc + 9 * 60 * 60 * 1000;
     // 5초 이내 차이
-    expect(Math.abs(requestDate.getTime() - kstShifted)).toBeLessThan(5000);
-    expect(Math.abs(createDate.getTime() - kstShifted)).toBeLessThan(5000);
+    for (const d of dateValues) {
+      expect(Math.abs(d.getTime() - kstShifted)).toBeLessThan(5000);
+    }
   });
 
   it('소문자 msgType도 정상 처리', async () => {

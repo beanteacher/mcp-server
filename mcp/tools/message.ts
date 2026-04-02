@@ -1,31 +1,20 @@
-import {
-  messageSend,
-  messageGetResult,
-  messageSearch,
-  messageFindFailures,
-  messageResultCodeExplain,
-  messageCheckPending,
-  messageRetry,
-  messageCancel,
-  messageStatSummary,
-  messageDiagnoseFailures,
-  messageDailyReport,
-  messageWeeklyReport,
-  messageChannelBreakdown,
-  messageDeliveryTimeStats,
-  messageTrendCompare,
-} from '../../feature/message/service';
-import { ToolModule } from '../types';
-import { readRequiredString, readOptionalString, readNumber } from '../utils';
-
-function stateLabel(s: number): string {
-  if (s === 0) return '대기';
-  if (s === 1) return '발송중';
-  if (s === 2) return '발송완료(성공)';
-  if (s === 3) return '발송완료(실패)';
-  if (s === 4) return '취소';
-  return `상태코드(${s})`;
-}
+import { messageGetResult } from '@/feature/message/get-result.service';
+import { messageSend, formatSendResult } from '@/feature/message/send.service';
+import { messageSearch } from '@/feature/message/search.service';
+import { messageFindFailures } from '@/feature/message/find-failures.service';
+import { messageResultCodeExplain } from '@/feature/message/result-code-explain.service';
+import { messageCheckPending } from '@/feature/message/check-pending.service';
+import { messageRetry } from '@/feature/message/retry.service';
+import { messageCancel } from '@/feature/message/cancel-service';
+import { messageStatSummary } from '@/feature/message/stat-summary.service';
+import { messageDiagnoseFailures } from '@/feature/message/diagnose-failures.service';
+import { messageDailyReport } from '@/feature/message/daily-report.service';
+import { messageWeeklyReport } from '@/feature/message/weekly-report.service';
+import { messageChannelBreakdown } from '@/feature/message/channel-breakdown-service';
+import { messageDeliveryTimeStats } from '@/feature/message/delivery-time-stats.service';
+import { messageTrendCompare } from '@/feature/message/trend-compare.service';
+import { ToolModule } from '@/mcp/types';
+import { readRequiredString, readOptionalString, readNumber } from '@/mcp/utils';
 
 function readStringArray(args: Record<string, unknown>, key: string): string[] | undefined {
   const value = args[key];
@@ -39,13 +28,15 @@ export const messageModule: ToolModule = {
   tools: [
     {
       name: 'message_get_result',
-      description: 'msgId로 발송 결과를 단건 조회합니다. SMS/MMS/KKO/RCS 4개 테이블을 모두 검색하여 결과를 반환합니다.',
+      description: 'msgId와 발송일로 발송 결과를 단건 조회합니다. LOG 테이블(YYYYMMDD/YYYYMM)을 자동 탐색하여 결과를 반환합니다.',
       inputSchema: {
         type: 'object',
         properties: {
           msgId: { type: 'string', description: '메시지 ID (정수 문자열)' },
+          date: { type: 'string', description: '발송일 (YYYY-MM-DD 또는 YYYYMM). LOG 테이블 suffix 결정에 사용' },
+          msgType: { type: 'string', description: '채널 (SMS/MMS/KKO/RCS). 미지정 시 전체 채널 탐색' },
         },
-        required: ['msgId'],
+        required: ['msgId', 'date'],
       },
     },
     {
@@ -235,32 +226,15 @@ export const messageModule: ToolModule = {
 
   async handle(name, args) {
     switch (name) {
-      // --- 01: message_get_result ---
-      case 'message_get_result': {
-        const row = await messageGetResult({ msgId: readRequiredString(args, 'msgId') });
-        const lines = [
-          `[${row.channel}] 발송 결과 조회`,
-          `table: ${row.tableName}`,
-          `msg_id: ${row.msgId}`,
-          `msg_type: ${row.msgType} / ${row.msgSubType}`,
-          `수신번호: ${row.destaddr}`,
-          `발신번호: ${row.callback}`,
-          `메시지: ${row.sendMsg ?? '(없음)'}`,
-        ];
-        if (row.subject) lines.push(`제목: ${row.subject}`);
-        lines.push(
-          `발송상태: ${stateLabel(row.messageState)}`,
-          `결과코드: ${row.resultCode ?? '(없음)'}`,
-          `결과수신시간: ${row.resultDeliverDate ?? '(없음)'}`,
-          `등록일시: ${row.createDate}`,
-          `발송요청일시: ${row.requestDate}`,
-        );
-        return lines.join('\n');
-      }
+      case 'message_get_result':
+        return messageGetResult({
+          msgId: readRequiredString(args, 'msgId'),
+          date: readRequiredString(args, 'date'),
+          msgType: readOptionalString(args, 'msgType'),
+        });
 
-      // --- 02: message_search ---
-      case 'message_search': {
-        const result = await messageSearch({
+      case 'message_search':
+        return messageSearch({
           dateFrom: readOptionalString(args, 'dateFrom'),
           dateTo: readOptionalString(args, 'dateTo'),
           destaddr: readOptionalString(args, 'destaddr'),
@@ -271,17 +245,9 @@ export const messageModule: ToolModule = {
           page: readNumber(args, 'page', 1),
           size: readNumber(args, 'size', 20),
         });
-        if (result.items.length === 0) return `검색 결과가 없습니다. (전체 ${result.total}건)`;
-        const header = `검색 결과: ${result.total}건 (${result.page}/${result.totalPages} 페이지)`;
-        const rows = result.items.map(r =>
-          `[${r.channel}] msg_id:${r.msgId} | ${r.destaddr} | ${stateLabel(r.messageState)} | ${r.resultCode ?? '-'} | ${r.createDate}`
-        );
-        return [header, '---', ...rows].join('\n');
-      }
 
-      // --- 03: message_find_failures ---
-      case 'message_find_failures': {
-        const result = await messageFindFailures({
+      case 'message_find_failures':
+        return messageFindFailures({
           dateFrom: readOptionalString(args, 'dateFrom'),
           dateTo: readOptionalString(args, 'dateTo'),
           msgType: readOptionalString(args, 'msgType'),
@@ -289,275 +255,79 @@ export const messageModule: ToolModule = {
           page: readNumber(args, 'page', 1),
           size: readNumber(args, 'size', 20),
         });
-        if (result.total === 0) return '실패 건이 없습니다.';
-        const header = `실패 건: ${result.total}건 (${result.page}/${result.totalPages} 페이지)`;
-        const summary = result.resultCodeSummary.map(s => `  ${s.resultCode}: ${s.count}건`);
-        const rows = result.items.map(r =>
-          `[${r.channel}] msg_id:${r.msgId} | ${r.destaddr} | code:${r.resultCode ?? '-'} | ${r.createDate}`
-        );
-        return [header, '', '결과코드별 요약:', ...summary, '', '---', ...rows].join('\n');
-      }
 
-      // --- 04: message_result_code_explain ---
-      case 'message_result_code_explain': {
-        const result = messageResultCodeExplain({
+      case 'message_result_code_explain':
+        return messageResultCodeExplain({
           resultCode: readOptionalString(args, 'resultCode'),
         });
-        const lines = result.codes.map(c =>
-          `${c.code}: ${c.description} [${c.category}] ${c.retryable ? '(재시도 가능)' : '(재시도 불가)'}`
-        );
-        return lines.join('\n');
-      }
 
-      // --- 05: message_check_pending ---
-      case 'message_check_pending': {
-        const result = await messageCheckPending({
+      case 'message_check_pending':
+        return messageCheckPending({
           olderThanMinutes: args.olderThanMinutes !== undefined ? readNumber(args, 'olderThanMinutes', 0) : undefined,
           msgType: readOptionalString(args, 'msgType'),
         });
-        const lines = [
-          `대기/처리중 현황`,
-          `전체: ${result.totalAll}건 (대기: ${result.totalPending} / 처리중: ${result.totalProcessing})`,
-          '',
-          '채널별:',
-        ];
-        for (const [ch, val] of Object.entries(result.byChannel)) {
-          lines.push(`  ${ch}: ${val.total}건 (대기: ${val.pending} / 처리중: ${val.processing})`);
-        }
-        if (result.oldest) {
-          lines.push('', `가장 오래된 대기 건: ${result.oldest.createDate} (${result.oldest.channel})`);
-        }
-        if (result.olderThanMinutes > 0) {
-          lines.push('', `${result.olderThanMinutes}분 이상 체류 건: ${result.staleCount}건${result.staleCount > 0 ? ' ⚠️' : ''}`);
-        }
-        return lines.join('\n');
-      }
 
-      // --- 06: message_retry ---
-      case 'message_retry': {
-        const result = await messageRetry({
+      case 'message_retry':
+        return messageRetry({
           msgIds: readStringArray(args, 'msgIds'),
           resultCode: readOptionalString(args, 'resultCode'),
           dateFrom: readOptionalString(args, 'dateFrom'),
           dateTo: readOptionalString(args, 'dateTo'),
           maxCount: args.maxCount !== undefined ? readNumber(args, 'maxCount', 100) : undefined,
         });
-        const lines = [`재발송 처리 완료: ${result.totalRetried}건`];
-        if (result.retriedIds.length > 0 && result.retriedIds.length <= 20) {
-          lines.push(`대상 msgId: ${result.retriedIds.join(', ')}`);
-        }
-        if (result.warnings.length > 0) {
-          lines.push('', '경고:', ...result.warnings.map(w => `  ${w}`));
-        }
-        return lines.join('\n');
-      }
 
-      // --- 07: message_cancel ---
-      case 'message_cancel': {
-        const result = await messageCancel({
+      case 'message_cancel':
+        return messageCancel({
           msgIds: readStringArray(args, 'msgIds'),
           groupId: readOptionalString(args, 'groupId'),
         });
-        const lines = [
-          `취소 처리 완료`,
-          `취소 성공: ${result.totalCancelled}건`,
-          `취소 불가 (이미 발송): ${result.totalNotCancellable}건`,
-        ];
-        return lines.join('\n');
-      }
 
-      // --- 08: message_stat_summary ---
-      case 'message_stat_summary': {
-        const result = await messageStatSummary({
+      case 'message_stat_summary':
+        return messageStatSummary({
           dateFrom: readOptionalString(args, 'dateFrom'),
           dateTo: readOptionalString(args, 'dateTo'),
           groupBy: readOptionalString(args, 'groupBy'),
         });
-        const lines = [
-          `발송 통계 요약 (groupBy: ${result.groupBy})`,
-          `전체: ${result.total}건 | 성공: ${result.success} | 실패: ${result.fail} | 대기: ${result.pending} | 처리중: ${result.processing}`,
-          `성공률: ${result.successRate}%`,
-          '',
-        ];
-        for (const b of result.breakdown) {
-          const label = result.groupBy === 'hour' ? `${b.group}시` : b.group;
-          lines.push(`  ${label}: ${b.total}건 (성공:${b.success} 실패:${b.fail} 대기:${b.pending}) 성공률:${b.successRate}%`);
-        }
-        return lines.join('\n');
-      }
 
-      // --- 09: message_diagnose_failures ---
-      case 'message_diagnose_failures': {
-        const result = await messageDiagnoseFailures({
+      case 'message_diagnose_failures':
+        return messageDiagnoseFailures({
           dateFrom: readOptionalString(args, 'dateFrom'),
           dateTo: readOptionalString(args, 'dateTo'),
           msgType: readOptionalString(args, 'msgType'),
         });
-        const lines = [
-          `실패 진단 결과`,
-          `전체: ${result.totalAll}건 | 실패: ${result.totalFail}건 | 실패율: ${result.failRate}%`,
-          '',
-          '시간대별 실패 분포:',
-          ...result.hourly.map(h => `  ${h.hour}시: ${h.count}건`),
-          '',
-          '결과코드별 분포 (상위):',
-          ...result.byCode.map(c => `  ${c.resultCode}: ${c.count}건`),
-          '',
-          '통신사별 분포:',
-          ...result.byNet.map(n => `  ${n.resultNetId}: ${n.count}건`),
-          '',
-          '진단:',
-          ...result.diagnoses.map(d => `  • ${d}`),
-        ];
-        return lines.join('\n');
-      }
 
-      // --- 10: message_daily_report ---
-      case 'message_daily_report': {
-        const result = await messageDailyReport({
+      case 'message_daily_report':
+        return messageDailyReport({
           date: readOptionalString(args, 'date'),
         });
-        const lines = [
-          `[${result.date}] 일간 발송 리포트`,
-          `전체: ${result.total}건 | 성공: ${result.success} | 실패: ${result.fail} | 대기: ${result.pending}`,
-          `성공률: ${result.successRate}%`,
-          result.avgDeliverySeconds != null ? `평균 수신 소요시간: ${result.avgDeliverySeconds}초` : '평균 수신 소요시간: (데이터 없음)',
-          '',
-          '채널별:',
-          ...result.byChannel.map(c => `  ${c.channel}: ${c.total}건 (성공:${c.success} 실패:${c.fail}) 성공률:${c.successRate}%`),
-          '',
-          'Top 실패코드:',
-          ...result.topFailCodes.map(f => `  ${f.code}: ${f.count}건 - ${f.description}`),
-          '',
-          '시간대별 발송량:',
-          ...result.hourlyDistribution.map(h => `  ${String(h.hour).padStart(2, '0')}시: ${h.count}건`),
-        ];
-        return lines.join('\n');
-      }
 
-      // --- 11: message_weekly_report ---
-      case 'message_weekly_report': {
-        const result = await messageWeeklyReport({
+      case 'message_weekly_report':
+        return messageWeeklyReport({
           weekStartDate: readOptionalString(args, 'weekStartDate'),
         });
-        const lines = [
-          `[주간 발송 리포트] ${result.period}`,
-          '',
-          '■ 전체 요약',
-          `  이번 주: ${result.thisWeek.total}건 (성공:${result.thisWeek.success} 실패:${result.thisWeek.fail}) 성공률:${result.thisWeek.successRate}%`,
-          `  전    주: ${result.prevWeek.total}건 (성공:${result.prevWeek.success} 실패:${result.prevWeek.fail}) 성공률:${result.prevWeek.successRate}%`,
-          '',
-          '■ 전주 대비 증감',
-          `  발송량: ${result.change.totalRate != null ? (result.change.totalRate > 0 ? '+' : '') + result.change.totalRate + '%' : '-'}`,
-          `  성공건: ${result.change.successRate != null ? (result.change.successRate > 0 ? '+' : '') + result.change.successRate + '%' : '-'}`,
-          `  실패건: ${result.change.failRate != null ? (result.change.failRate > 0 ? '+' : '') + result.change.failRate + '%' : '-'}`,
-          `  성공률: ${(result.change.successRateDiff > 0 ? '+' : '') + result.change.successRateDiff}%p`,
-          '',
-          '■ 일별 추이',
-          '  날짜       | 전체  | 성공  | 실패  | 성공률',
-          '  -----------|-------|-------|-------|-------',
-        ];
-        for (const d of result.daily) {
-          lines.push(`  ${d.date} | ${String(d.total).padStart(5)} | ${String(d.success).padStart(5)} | ${String(d.fail).padStart(5)} | ${d.successRate}%`);
-        }
-        if (result.byChannel.length > 0) {
-          lines.push('', '■ 채널별 집계');
-          for (const c of result.byChannel) {
-            lines.push(`  ${c.channel}: ${c.total}건 (성공:${c.success} 실패:${c.fail}) 성공률:${c.successRate}%`);
-          }
-        }
-        return lines.join('\n');
-      }
 
-      // --- 12: message_channel_breakdown ---
-      case 'message_channel_breakdown': {
-        const result = await messageChannelBreakdown({
+      case 'message_channel_breakdown':
+        return messageChannelBreakdown({
           dateFrom: readOptionalString(args, 'dateFrom'),
           dateTo: readOptionalString(args, 'dateTo'),
         });
-        const lines = [
-          `[채널별 세부유형 분해]`,
-          `전체: ${result.total}건 | 성공: ${result.success} | 실패: ${result.fail} | 성공률: ${result.successRate}%`,
-          '',
-          '  채널  | 유형  | 건수   | 성공  | 실패  | 성공률 | 비중',
-          '  ------|-------|--------|-------|-------|--------|------',
-        ];
-        for (const ch of result.breakdown) {
-          lines.push(`  ${ch.channel.padEnd(5)} | (소계) | ${String(ch.total).padStart(6)} | ${String(ch.success).padStart(5)} | ${String(ch.fail).padStart(5)} | ${ch.successRate}% | ${ch.share}%`);
-          for (const sub of ch.subTypes) {
-            lines.push(`        | ${sub.subType.padEnd(5)} | ${String(sub.total).padStart(6)} | ${String(sub.success).padStart(5)} | ${String(sub.fail).padStart(5)} | ${sub.successRate}% | ${sub.share}%`);
-          }
-        }
-        return lines.join('\n');
-      }
 
-      // --- 13: message_delivery_time_stats ---
-      case 'message_delivery_time_stats': {
-        const result = await messageDeliveryTimeStats({
+      case 'message_delivery_time_stats':
+        return messageDeliveryTimeStats({
           dateFrom: readOptionalString(args, 'dateFrom'),
           dateTo: readOptionalString(args, 'dateTo'),
           msgType: readOptionalString(args, 'msgType'),
         });
-        const lines = [
-          `[수신 소요시간 분포]`,
-          `측정 대상: ${result.totalMeasured}건 (result_deliver_date가 있는 성공 건)`,
-        ];
-        if (result.overall.avgSeconds != null) {
-          lines.push(`전체 평균: ${result.overall.avgSeconds}초 | 최소: ${result.overall.minSeconds}초 | 최대: ${result.overall.maxSeconds}초`);
-        }
-        lines.push('', '■ 구간별 분포');
-        lines.push('  구간       | 건수   | 비율');
-        lines.push('  -----------|--------|------');
-        for (const h of result.histogram) {
-          const bar = '█'.repeat(Math.max(1, Math.round(h.percentage / 5)));
-          lines.push(`  ${h.label.padEnd(9)} | ${String(h.count).padStart(6)} | ${h.percentage}% ${bar}`);
-        }
-        if (result.byChannel.length > 0) {
-          lines.push('', '■ 채널별 소요시간');
-          for (const c of result.byChannel) {
-            lines.push(`  ${c.channel}: 평균 ${c.avgSeconds ?? '-'}초 | 최소 ${c.minSeconds ?? '-'}초 | 최대 ${c.maxSeconds ?? '-'}초 (${c.count}건)`);
-          }
-        }
-        return lines.join('\n');
-      }
 
-      // --- 14: message_trend_compare ---
-      case 'message_trend_compare': {
-        const result = await messageTrendCompare({
+      case 'message_trend_compare':
+        return messageTrendCompare({
           periodA_from: readRequiredString(args, 'periodA_from'),
           periodA_to: readRequiredString(args, 'periodA_to'),
           periodB_from: readRequiredString(args, 'periodB_from'),
           periodB_to: readRequiredString(args, 'periodB_to'),
           groupBy: readOptionalString(args, 'groupBy'),
         });
-        const a = result.periodA;
-        const b = result.periodB;
-        const lines = [
-          `[기간 비교] (groupBy: ${result.groupBy})`,
-          '',
-          '■ 전체 요약',
-          `  기간A (${a.from} ~ ${a.to}): ${a.total}건 (성공:${a.success} 실패:${a.fail}) 성공률:${a.successRate}%`,
-          `  기간B (${b.from} ~ ${b.to}): ${b.total}건 (성공:${b.success} 실패:${b.fail}) 성공률:${b.successRate}%`,
-          '',
-          '■ 증감',
-          `  발송량: ${result.change.totalRate != null ? (result.change.totalRate > 0 ? '+' : '') + result.change.totalRate + '%' : '-'}`,
-          `  성공건: ${result.change.successRate != null ? (result.change.successRate > 0 ? '+' : '') + result.change.successRate + '%' : '-'}`,
-          `  실패건: ${result.change.failRate != null ? (result.change.failRate > 0 ? '+' : '') + result.change.failRate + '%' : '-'}`,
-          `  성공률: ${(result.change.successRateDiff > 0 ? '+' : '') + result.change.successRateDiff}%p`,
-          '',
-          '■ 그룹별 비교',
-          `  ${'그룹'.padEnd(8)} | A건수  | A성공률 | B건수  | B성공률 | 증감`,
-          `  ${''.padEnd(8, '-')}|--------|--------|--------|--------|------`,
-        ];
-        for (const c of result.comparison) {
-          const label = result.groupBy === 'hour' ? `${c.group}시`.padEnd(8) : c.group.padEnd(8);
-          const chg = c.change.totalRate != null ? (c.change.totalRate > 0 ? '+' : '') + c.change.totalRate + '%' : '-';
-          lines.push(`  ${label} | ${String(c.periodA.total).padStart(6)} | ${String(c.periodA.successRate).padStart(5)}% | ${String(c.periodB.total).padStart(6)} | ${String(c.periodB.successRate).padStart(5)}% | ${chg}`);
-        }
-        return lines.join('\n');
-      }
 
-      // --- message_send ---
       case 'message_send': {
         const result = await messageSend({
           msgType: readRequiredString(args, 'msgType'),
@@ -573,7 +343,7 @@ export const messageModule: ToolModule = {
           groupId: readOptionalString(args, 'groupId'),
           requestDate: readOptionalString(args, 'requestDate'),
         });
-        return [`message_send 적재 성공`, `table: ${result.tableName}`, `msg_id: ${result.msgId}`, `msg_type: ${result.msgType}`, `msg_sub_type: ${result.msgSubType}`, `destaddr: ${result.destaddr}`, `request_date: ${result.requestDate}`].join('\n');
+        return formatSendResult(result);
       }
 
       default:
