@@ -3,10 +3,9 @@ import {
   VALID_MSG_TYPES, MsgType, buildWhereSql,
   resolveLogTables, buildLogUnionSql,
 } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageWeeklyReportInput = {
-  weekStartDate?: string;
-};
+export type MessageWeeklyReportInput = MessageDto.MessageWeeklyReportInput;
 
 export async function messageWeeklyReport(input: MessageWeeklyReportInput): Promise<string> {
   let thisWeekStart: Date;

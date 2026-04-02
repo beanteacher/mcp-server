@@ -3,15 +3,9 @@ import {
   resolveChannelFilter, buildWhereSql, COMMON_SELECT,
   RawTranRow, rawToSearchRow, resolveLogTables, buildLogUnionSql,
 } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageFindFailuresInput = {
-  dateFrom?: string;
-  dateTo?: string;
-  msgType?: string;
-  resultCode?: string;
-  page?: number;
-  size?: number;
-};
+export type MessageFindFailuresInput = MessageDto.MessageFindFailuresInput;
 
 export async function messageFindFailures(input: MessageFindFailuresInput): Promise<string> {
   const page = Math.max(1, input.page ?? 1);

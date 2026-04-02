@@ -2,12 +2,9 @@ import {
   prisma, formatKst, VALID_MSG_TYPES, MsgType,
   TABLE_NAMES, LOG_TABLE_PREFIXES, stateLabel,
 } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageGetResultInput = {
-  msgId: string;
-  date: string;
-  msgType?: string;
-};
+export type MessageGetResultInput = MessageDto.MessageGetResultInput;
 
 type LogQueryRow = {
   msg_id: bigint;

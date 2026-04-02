@@ -1,11 +1,9 @@
 import {
   prisma, toKstNow, VALID_MSG_TYPES, MsgType, TABLE_NAMES,
 } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageCancelInput = {
-  msgIds?: string[];
-  groupId?: string;
-};
+export type MessageCancelInput = MessageDto.MessageCancelInput;
 
 export async function messageCancel(input: MessageCancelInput): Promise<string> {
   if (!input.msgIds?.length && !input.groupId) {

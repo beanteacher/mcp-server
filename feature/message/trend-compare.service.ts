@@ -3,14 +3,9 @@ import {
   VALID_MSG_TYPES, MsgType, buildWhereSql,
   resolveLogTables, buildLogUnionSql,
 } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageTrendCompareInput = {
-  periodA_from: string;
-  periodA_to: string;
-  periodB_from: string;
-  periodB_to: string;
-  groupBy?: string;
-};
+export type MessageTrendCompareInput = MessageDto.MessageTrendCompareInput;
 
 async function periodStats(dateFrom: Date, dateTo: Date, groupByMode: string) {
   const channels: MsgType[] = [...VALID_MSG_TYPES];

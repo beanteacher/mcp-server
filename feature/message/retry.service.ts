@@ -2,14 +2,9 @@ import {
   prisma, toKstNow, parseDateFilter, todayStartKst,
   VALID_MSG_TYPES, MsgType, TABLE_NAMES, buildWhereSql,
 } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageRetryInput = {
-  msgIds?: string[];
-  resultCode?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  maxCount?: number;
-};
+export type MessageRetryInput = MessageDto.MessageRetryInput;
 
 const MAX_RETRY_COUNT = 3;
 

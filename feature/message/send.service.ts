@@ -2,30 +2,10 @@ import {
   prisma, KST_OFFSET_MS, toKstNow, formatKst,
   VALID_MSG_TYPES, MsgType, MSG_TYPE_SUB_TYPES, TABLE_NAMES,
 } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageSendInput = {
-  msgType: string;
-  msgSubType: string;
-  destaddr: string;
-  callback: string;
-  sendMsg: string;
-  subject?: string;
-  filePath?: string;
-  userId?: string;
-  kisaCode?: string;
-  billCode?: string;
-  groupId?: string;
-  requestDate?: string;
-};
-
-export type MessageSendResult = {
-  msgId: string;
-  msgType: string;
-  msgSubType: string;
-  destaddr: string;
-  tableName: string;
-  requestDate: string;
-};
+export type MessageSendInput = MessageDto.MessageSendInput;
+export type MessageSendResult = MessageDto.MessageSendResult;
 
 function ensureString(value: unknown, field: string, maxLength?: number): string {
   if (typeof value !== 'string') {

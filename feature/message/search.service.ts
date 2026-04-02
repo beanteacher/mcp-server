@@ -4,18 +4,9 @@ import {
   RawTranRow, rawToSearchRow, resolveLogTables, buildLogUnionSql,
   stateLabel,
 } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageSearchInput = {
-  dateFrom?: string;
-  dateTo?: string;
-  destaddr?: string;
-  msgType?: string;
-  messageState?: number;
-  userId?: string;
-  groupId?: string;
-  page?: number;
-  size?: number;
-};
+export type MessageSearchInput = MessageDto.MessageSearchInput;
 
 export async function messageSearch(input: MessageSearchInput): Promise<string> {
   const page = Math.max(1, input.page ?? 1);

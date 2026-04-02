@@ -4,12 +4,9 @@ import {
   buildWhereSql, resolveLogTables, buildLogUnionSql,
   RESULT_CODE_MAP,
 } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageDiagnoseFailuresInput = {
-  dateFrom?: string;
-  dateTo?: string;
-  msgType?: string;
-};
+export type MessageDiagnoseFailuresInput = MessageDto.MessageDiagnoseFailuresInput;
 
 export async function messageDiagnoseFailures(input: MessageDiagnoseFailuresInput): Promise<string> {
   const dateFrom = parseDateFilter(input.dateFrom) ?? todayStartKst();

@@ -3,11 +3,9 @@ import {
   VALID_MSG_TYPES, MsgType, buildWhereSql,
   resolveLogTables, buildLogUnionSql,
 } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageChannelBreakdownInput = {
-  dateFrom?: string;
-  dateTo?: string;
-};
+export type MessageChannelBreakdownInput = MessageDto.MessageChannelBreakdownInput;
 
 export async function messageChannelBreakdown(input: MessageChannelBreakdownInput): Promise<string> {
   const dateFrom = parseDateFilter(input.dateFrom) ?? todayStartKst();

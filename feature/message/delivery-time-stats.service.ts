@@ -3,12 +3,9 @@ import {
   resolveChannelFilter, buildWhereSql,
   resolveLogTables, buildLogUnionSql,
 } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageDeliveryTimeStatsInput = {
-  dateFrom?: string;
-  dateTo?: string;
-  msgType?: string;
-};
+export type MessageDeliveryTimeStatsInput = MessageDto.MessageDeliveryTimeStatsInput;
 
 const DELIVERY_BUCKETS = [
   { label: '1초 이내' },

@@ -3,12 +3,9 @@ import {
   VALID_MSG_TYPES, MsgType, buildWhereSql,
   resolveLogTables, buildLogUnionSql,
 } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageStatSummaryInput = {
-  dateFrom?: string;
-  dateTo?: string;
-  groupBy?: string;
-};
+export type MessageStatSummaryInput = MessageDto.MessageStatSummaryInput;
 
 export async function messageStatSummary(input: MessageStatSummaryInput): Promise<string> {
   const dateFrom = parseDateFilter(input.dateFrom) ?? todayStartKst();

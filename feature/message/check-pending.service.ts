@@ -3,11 +3,9 @@ import {
   VALID_MSG_TYPES, MsgType, resolveChannelFilter,
   buildWhereSql, buildUnionSql,
 } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageCheckPendingInput = {
-  olderThanMinutes?: number;
-  msgType?: string;
-};
+export type MessageCheckPendingInput = MessageDto.MessageCheckPendingInput;
 
 export async function messageCheckPending(input: MessageCheckPendingInput): Promise<string> {
   const { channels } = resolveChannelFilter(input.msgType);

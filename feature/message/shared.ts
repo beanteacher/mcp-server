@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { MessageDto } from './dto';
 
 export { prisma };
 
@@ -21,7 +22,7 @@ export function formatKst(date: Date): string {
 }
 
 export const VALID_MSG_TYPES = ['SMS', 'MMS', 'KKO', 'RCS'] as const;
-export type MsgType = typeof VALID_MSG_TYPES[number];
+export type MsgType = MessageDto.MsgType;
 
 export const MSG_TYPE_SUB_TYPES: Record<MsgType, string[]> = {
   SMS: ['SMS'],
@@ -91,17 +92,7 @@ export function resolveChannelFilter(input?: string): { channels: MsgType[]; sub
 // SQL builder helpers
 // =========================================
 
-export interface WhereParams {
-  dateFrom?: Date;
-  dateTo?: Date;
-  destaddr?: string;
-  messageState?: number;
-  messageStateIn?: number[];
-  userId?: string;
-  groupId?: number;
-  resultCode?: string;
-  subTypeFilter?: string;
-}
+export type WhereParams = MessageDto.WhereParams;
 
 export function buildWhereSql(params: WhereParams): { conditions: string[]; values: unknown[] } {
   const conditions: string[] = [];
@@ -123,23 +114,7 @@ export function buildWhereSql(params: WhereParams): { conditions: string[]; valu
 
 export const COMMON_SELECT = 'msg_id, msg_type, msg_sub_type, destaddr, callback, send_msg, message_state, result_code, result_net_id, result_deliver_date, request_date, create_date, user_id, group_id';
 
-export interface RawTranRow {
-  msg_id: bigint;
-  msg_type: string;
-  msg_sub_type: string;
-  destaddr: string;
-  callback: string;
-  send_msg: string | null;
-  message_state: number;
-  result_code: string | null;
-  result_net_id: string | null;
-  result_deliver_date: Date | null;
-  request_date: Date;
-  create_date: Date;
-  user_id: string | null;
-  group_id: number | null;
-  _channel: string;
-}
+export type RawTranRow = MessageDto.RawTranRow;
 
 export function rawToSearchRow(r: RawTranRow) {
   return {

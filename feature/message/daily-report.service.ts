@@ -3,10 +3,9 @@ import {
   VALID_MSG_TYPES, MsgType, buildWhereSql,
   resolveLogTables, buildLogUnionSql, RESULT_CODE_MAP,
 } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageDailyReportInput = {
-  date?: string;
-};
+export type MessageDailyReportInput = MessageDto.MessageDailyReportInput;
 
 export async function messageDailyReport(input: MessageDailyReportInput): Promise<string> {
   let dayStart: Date;

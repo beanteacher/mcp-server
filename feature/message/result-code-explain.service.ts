@@ -1,8 +1,7 @@
 import { RESULT_CODE_MAP } from './shared';
+import { MessageDto } from './dto';
 
-export type MessageResultCodeExplainInput = {
-  resultCode?: string;
-};
+export type MessageResultCodeExplainInput = MessageDto.MessageResultCodeExplainInput;
 
 function guessCategory(code: string): string {
   const prefix = code.charAt(0);
