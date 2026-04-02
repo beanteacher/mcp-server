@@ -1,9 +1,10 @@
 import { githubModule } from './tools/github';
 import { agentModule } from './tools/agent';
 import { messageModule } from './tools/message';
+import { fileModule } from './tools/file';
 import { ToolModule } from './types';
 
-const modules: ToolModule[] = [githubModule, agentModule, messageModule];
+const modules: ToolModule[] = [githubModule, agentModule, messageModule, fileModule];
 
 export const ALL_TOOLS = modules.flatMap(m => m.tools);
 
