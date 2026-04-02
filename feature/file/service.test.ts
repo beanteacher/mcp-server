@@ -3,7 +3,9 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { writeFile, readFile, unlink } from 'fs/promises';
 import { Document } from 'docx';
-import { slugify, parseMd, mdToDocx, mdToPdf } from './service';
+import { slugify, parseMd } from './shared';
+import { mdToDocx } from './md-to-docx.service';
+import { mdToPdf } from './md-to-pdf.service';
 
 // ── slugify ──
 

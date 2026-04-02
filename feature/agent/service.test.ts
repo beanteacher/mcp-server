@@ -2,7 +2,9 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { analyzeConfig, analyzeLogs, diagnose } from './service';
+import { analyzeConfig } from './analyze-config.service';
+import { analyzeLogs } from './analyze-logs.service';
+import { diagnose } from './diagnose.service';
 
 function makeTmpDir(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'agent-test-'));

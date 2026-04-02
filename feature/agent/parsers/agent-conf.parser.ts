@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { AgentDto } from '../dto';
+import { AgentDto } from '@/feature/agent/dto';
 
 export async function parseAgentConf(agentHome: string): Promise<AgentDto.AgentConfResult> {
   const filePath = path.resolve(agentHome, 'conf', 'agent.conf');

@@ -1,7 +1,11 @@
-import { getCommits, getAllCommits, getTodayCommits, getCommitDetail, getUserRepos } from '../../feature/github/service';
-import { analyzeDailyWork } from '../../lib/gemini';
-import { ToolModule } from '../types';
-import { readRequiredString, readOptionalString, readNumber } from '../utils';
+import { getCommits } from '@/feature/github/get-commits.service';
+import { getAllCommits } from '@/feature/github/get-all-commits.service';
+import { getTodayCommits } from '@/feature/github/get-today-commits.service';
+import { getCommitDetail } from '@/feature/github/get-commit-detail.service';
+import { getUserRepos } from '@/feature/github/get-user-repos.service';
+import { analyzeDailyWork } from '@/lib/gemini';
+import { ToolModule } from '@/mcp/types';
+import { readRequiredString, readOptionalString, readNumber } from '@/mcp/utils';
 
 export const githubModule: ToolModule = {
   tools: [

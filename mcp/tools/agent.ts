@@ -1,6 +1,10 @@
-import { analyzeConfig, analyzeLogs, diagnose, testDb, insertSample } from '../../feature/agent/service';
-import { ToolModule } from '../types';
-import { readRequiredString, readOptionalString, readNumber } from '../utils';
+import { analyzeConfig } from '@/feature/agent/analyze-config.service';
+import { analyzeLogs } from '@/feature/agent/analyze-logs.service';
+import { diagnose } from '@/feature/agent/diagnose.service';
+import { testDb } from '@/feature/agent/test-db.service';
+import { insertSample } from '@/feature/agent/insert-sample.service';
+import { ToolModule } from '@/mcp/types';
+import { readRequiredString, readOptionalString, readNumber } from '@/mcp/utils';
 
 export const agentModule: ToolModule = {
   tools: [

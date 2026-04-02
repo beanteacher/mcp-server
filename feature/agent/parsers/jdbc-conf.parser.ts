@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { AgentDto } from '../dto';
+import { AgentDto } from '@/feature/agent/dto';
 
 type DbType = AgentDto.JdbcConfResult['dbType'];
 

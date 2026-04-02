@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { AgentDto } from '../dto';
+import { AgentDto } from '@/feature/agent/dto';
 
 function resolveVariables(value: string, env: Map<string, string>): string {
   let resolved = value;

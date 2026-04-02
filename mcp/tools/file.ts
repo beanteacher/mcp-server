@@ -1,6 +1,8 @@
-import { mdToDocx, mdToPdf, generateImage } from '../../feature/file/service';
-import { ToolModule } from '../types';
-import { readRequiredString, readOptionalString, readNumber } from '../utils';
+import { mdToDocx } from '@/feature/file/md-to-docx.service';
+import { mdToPdf } from '@/feature/file/md-to-pdf.service';
+import { generateImage } from '@/feature/file/generate-image.service';
+import { ToolModule } from '@/mcp/types';
+import { readRequiredString, readOptionalString, readNumber } from '@/mcp/utils';
 
 function formatConvertResult(result: { outputPath: string; sizeBytes: number }): string {
   const sizeKB = (result.sizeBytes / 1024).toFixed(1);
@@ -10,7 +12,7 @@ function formatConvertResult(result: { outputPath: string; sizeBytes: number }):
 export const fileModule: ToolModule = {
   tools: [
     {
-      name: 'file_md_to_docx',
+      name: 'file_fransform_md_to_docx',
       description: 'Markdown 파일을 DOCX(Word) 문서로 변환합니다. 맑은 고딕 기반 스타일이 자동 적용됩니다.',
       inputSchema: {
         type: 'object',
@@ -22,7 +24,7 @@ export const fileModule: ToolModule = {
       },
     },
     {
-      name: 'file_md_to_pdf',
+      name: 'file_transform_md_to_pdf',
       description: 'Markdown 파일을 PDF 문서로 변환합니다. 맑은 고딕 기반 스타일과 목차 내부 링크가 자동 적용됩니다.',
       inputSchema: {
         type: 'object',
@@ -52,27 +54,30 @@ export const fileModule: ToolModule = {
   ],
 
   async handle(name: string, args: Record<string, unknown>): Promise<string> {
-    if (name === 'file_md_to_docx') {
-      const sourcePath = readRequiredString(args, 'sourcePath');
-      const outputPath = readOptionalString(args, 'outputPath');
-      return formatConvertResult(await mdToDocx(sourcePath, outputPath));
+    switch (name) {
+      case 'file_md_to_docx': {
+        const sourcePath = readRequiredString(args, 'sourcePath');
+        const outputPath = readOptionalString(args, 'outputPath');
+        return formatConvertResult(await mdToDocx(sourcePath, outputPath));
+      }
+      case 'file_md_to_pdf': {
+        const sourcePath = readRequiredString(args, 'sourcePath');
+        const outputPath = readOptionalString(args, 'outputPath');
+        return formatConvertResult(await mdToPdf(sourcePath, outputPath));
+      }
+      case 'file_generate_image': {
+        const width = readNumber(args, 'width', 0);
+        const height = readNumber(args, 'height', 0);
+        const background = readOptionalString(args, 'background');
+        const text = readOptionalString(args, 'text');
+        const formatStr = readOptionalString(args, 'format') as 'png' | 'jpeg' | 'webp' | undefined;
+        const outputPath = readOptionalString(args, 'outputPath');
+        const result = await generateImage({ width, height, background, text, format: formatStr, outputPath });
+        const sizeKB = (result.sizeBytes / 1024).toFixed(1);
+        return `이미지 생성 완료\n- 출력: ${result.outputPath}\n- 크기: ${width}×${height} px\n- 파일: ${sizeKB} KB`;
+      }
+      default:
+        throw new Error(`Unknown tool: ${name}`);
     }
-    if (name === 'file_md_to_pdf') {
-      const sourcePath = readRequiredString(args, 'sourcePath');
-      const outputPath = readOptionalString(args, 'outputPath');
-      return formatConvertResult(await mdToPdf(sourcePath, outputPath));
-    }
-    if (name === 'file_generate_image') {
-      const width = readNumber(args, 'width', 0);
-      const height = readNumber(args, 'height', 0);
-      const background = readOptionalString(args, 'background');
-      const text = readOptionalString(args, 'text');
-      const formatStr = readOptionalString(args, 'format') as 'png' | 'jpeg' | 'webp' | undefined;
-      const outputPath = readOptionalString(args, 'outputPath');
-      const result = await generateImage({ width, height, background, text, format: formatStr, outputPath });
-      const sizeKB = (result.sizeBytes / 1024).toFixed(1);
-      return `이미지 생성 완료\n- 출력: ${result.outputPath}\n- 크기: ${width}×${height} px\n- 파일: ${sizeKB} KB`;
-    }
-    throw new Error(`Unknown tool: ${name}`);
   },
 };
