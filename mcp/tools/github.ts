@@ -1,9 +1,7 @@
-import { getCommits } from '@/feature/github/get-commits.service';
+import { getCommits, formatCommits } from '@/feature/github/get-commits.service';
 import { getAllCommits } from '@/feature/github/get-all-commits.service';
-import { getTodayCommits } from '@/feature/github/get-today-commits.service';
-import { getCommitDetail } from '@/feature/github/get-commit-detail.service';
-import { getUserRepos } from '@/feature/github/get-user-repos.service';
-import { analyzeDailyWork } from '@/lib/gemini';
+import { getUserRepos, formatUserRepos } from '@/feature/github/get-user-repos.service';
+import { getDailySummary } from '@/feature/github/daily-summary.service';
 import { ToolModule } from '@/mcp/types';
 import { readRequiredString, readOptionalString, readNumber } from '@/mcp/utils';
 
@@ -60,21 +58,18 @@ export const githubModule: ToolModule = {
         const commits = limit === 0
           ? await getAllCommits(owner, repoName, author, branch)
           : await getCommits(owner, repoName, limit, author, branch);
-        return commits.map(c => `${c.sha.slice(0, 7)} │ ${c.commit.author?.date?.slice(0, 10)} │ ${c.commit.message.split('\n')[0]}`).join('\n');
+        return formatCommits(commits);
       }
 
       case 'get_user_repos': {
         const repos = await getUserRepos(readRequiredString(args, 'username'));
-        return repos.map(r => `${r.name} │ ${r.language ?? '-'} │ ⭐${r.stargazers_count} │ ${r.updated_at.slice(0, 10)} │ ${r.description ?? ''}`).join('\n');
+        return formatUserRepos(repos);
       }
 
       case 'get_daily_summary': {
         const repo = readRequiredString(args, 'repo');
         const [owner, repoName] = repo.split('/');
-        const todayCommits = await getTodayCommits(owner, repoName, readOptionalString(args, 'branch'));
-        if (todayCommits.length === 0) return '오늘 커밋 내역이 없습니다.';
-        const details = await Promise.all(todayCommits.slice(0, 10).map(c => getCommitDetail(owner, repoName, c.sha)));
-        return await analyzeDailyWork(repo, details, readOptionalString(args, 'model'));
+        return getDailySummary(owner, repoName, readOptionalString(args, 'branch'), readOptionalString(args, 'model'));
       }
 
       default:

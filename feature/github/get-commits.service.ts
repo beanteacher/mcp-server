@@ -1,6 +1,10 @@
 import type { GitHubDto } from './dto';
 import { githubHeaders, parseErrorMessage } from './shared';
 
+export function formatCommits(commits: GitHubDto.Commit[]): string {
+  return commits.map(c => `${c.sha.slice(0, 7)} │ ${c.commit.author?.date?.slice(0, 10)} │ ${c.commit.message.split('\n')[0]}`).join('\n');
+}
+
 export async function getCommits(
   owner: string,
   repo: string,
