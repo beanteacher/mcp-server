@@ -93,3 +93,11 @@ export async function insertSample(
 
   return { tableName, insertedCount: insertedPks.length, insertedPks };
 }
+
+export function formatInsertSample(result: AgentDto.InsertSampleResult): string {
+  return [
+    `tableName: ${result.tableName}`,
+    `insertedCount: ${result.insertedCount}`,
+    `insertedPks: ${result.insertedPks.join(', ')}`,
+  ].join('\n');
+}

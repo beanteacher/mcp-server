@@ -15,9 +15,7 @@ export async function analyzeConfig(
   const detectedOs = os ?? detectOs(resolvedHome);
 
   const [setting, agentConf, jdbcConf] = await Promise.all([
-    detectedOs === 'windows'
-      ? parseSettingCmd(resolvedHome)
-      : parseSettingSh(resolvedHome),
+    detectedOs === 'windows' ? parseSettingCmd(resolvedHome) : parseSettingSh(resolvedHome),
     parseAgentConf(resolvedHome),
     parseJdbcConf(resolvedHome),
   ]);
@@ -39,4 +37,8 @@ export async function analyzeConfig(
     jdbcConf: maskedJdbc,
     activeMessageTypes,
   };
+}
+
+export function formatAnalyzeConfig(result: AgentDto.ConfigResult): string {
+  return JSON.stringify(result, null, 2);
 }

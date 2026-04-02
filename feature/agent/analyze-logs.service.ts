@@ -90,3 +90,7 @@ export async function analyzeLogs(agentHome: string): Promise<AgentDto.LogResult
 
   return { entries: allEntries, summary };
 }
+
+export function formatAnalyzeLogs(result: AgentDto.LogResult): string {
+  return JSON.stringify(result, null, 2);
+}

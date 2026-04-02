@@ -1,8 +1,8 @@
-import { analyzeConfig } from '@/feature/agent/analyze-config.service';
-import { analyzeLogs } from '@/feature/agent/analyze-logs.service';
-import { diagnose } from '@/feature/agent/diagnose.service';
-import { testDb } from '@/feature/agent/test-db.service';
-import { insertSample } from '@/feature/agent/insert-sample.service';
+import { analyzeConfig, formatAnalyzeConfig } from '@/feature/agent/analyze-config.service';
+import { analyzeLogs, formatAnalyzeLogs } from '@/feature/agent/analyze-logs.service';
+import { diagnose, formatDiagnose } from '@/feature/agent/diagnose.service';
+import { testDb, formatTestDb } from '@/feature/agent/test-db.service';
+import { insertSample, formatInsertSample } from '@/feature/agent/insert-sample.service';
 import { ToolModule } from '@/mcp/types';
 import { readRequiredString, readOptionalString, readNumber } from '@/mcp/utils';
 
@@ -75,22 +75,22 @@ export const agentModule: ToolModule = {
     switch (name) {
       case 'agent_analyze_config': {
         const result = await analyzeConfig(readRequiredString(args, 'agentHome'), readOptionalString(args, 'os') as 'windows' | 'linux' | undefined);
-        return JSON.stringify(result, null, 2);
+        return formatAnalyzeConfig(result);
       }
 
       case 'agent_analyze_logs': {
         const result = await analyzeLogs(readRequiredString(args, 'agentHome'));
-        return JSON.stringify(result, null, 2);
+        return formatAnalyzeLogs(result);
       }
 
       case 'agent_diagnose': {
         const result = await diagnose(readRequiredString(args, 'agentHome'), readOptionalString(args, 'os') as 'windows' | 'linux' | undefined);
-        return JSON.stringify(result, null, 2);
+        return formatDiagnose(result);
       }
 
       case 'agent_test_db': {
         const result = await testDb(readRequiredString(args, 'agentHome'));
-        return [`dbType: ${result.dbType}`, `url: ${result.url}`, `connected: ${result.connected}`, `elapsedMs: ${result.elapsedMs}`, ...(result.error ? [`error: ${result.error}`] : [])].join('\n');
+        return formatTestDb(result);
       }
 
       case 'agent_insert_sample': {
@@ -100,7 +100,7 @@ export const agentModule: ToolModule = {
           sendMsg: readOptionalString(args, 'sendMsg'),
           count: args['count'] !== undefined ? readNumber(args, 'count', 1) : undefined,
         });
-        return [`tableName: ${result.tableName}`, `insertedCount: ${result.insertedCount}`, `insertedPks: ${result.insertedPks.join(', ')}`].join('\n');
+        return formatInsertSample(result);
       }
 
       default:

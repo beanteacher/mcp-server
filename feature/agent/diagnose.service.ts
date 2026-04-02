@@ -151,3 +151,7 @@ export async function diagnose(
     healthy: issues.every((i) => i.severity !== 'ERROR'),
   };
 }
+
+export function formatDiagnose(result: AgentDto.DiagnoseResult): string {
+  return JSON.stringify(result, null, 2);
+}

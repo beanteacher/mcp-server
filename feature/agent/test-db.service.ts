@@ -64,3 +64,13 @@ export async function testDb(agentHome: string): Promise<AgentDto.DbTestResult> 
     };
   }
 }
+
+export function formatTestDb(result: AgentDto.DbTestResult): string {
+  return [
+    `dbType: ${result.dbType}`,
+    `url: ${result.url}`,
+    `connected: ${result.connected}`,
+    `elapsedMs: ${result.elapsedMs}`,
+    ...(result.error ? [`error: ${result.error}`] : []),
+  ].join('\n');
+}
