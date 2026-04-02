@@ -1,13 +1,9 @@
 import { mdToDocx } from '@/feature/file/md-to-docx.service';
 import { mdToPdf } from '@/feature/file/md-to-pdf.service';
-import { generateImage } from '@/feature/file/generate-image.service';
+import { generateImage, formatGenerateImageResult } from '@/feature/file/generate-image.service';
+import { formatConvertResult } from '@/feature/file/shared';
 import { ToolModule } from '@/mcp/types';
 import { readRequiredString, readOptionalString, readNumber } from '@/mcp/utils';
-
-function formatConvertResult(result: { outputPath: string; sizeBytes: number }): string {
-  const sizeKB = (result.sizeBytes / 1024).toFixed(1);
-  return `변환 완료\n- 출력: ${result.outputPath}\n- 크기: ${sizeKB} KB`;
-}
 
 export const fileModule: ToolModule = {
   tools: [
@@ -73,8 +69,7 @@ export const fileModule: ToolModule = {
         const formatStr = readOptionalString(args, 'format') as 'png' | 'jpeg' | 'webp' | undefined;
         const outputPath = readOptionalString(args, 'outputPath');
         const result = await generateImage({ width, height, background, text, format: formatStr, outputPath });
-        const sizeKB = (result.sizeBytes / 1024).toFixed(1);
-        return `이미지 생성 완료\n- 출력: ${result.outputPath}\n- 크기: ${width}×${height} px\n- 파일: ${sizeKB} KB`;
+        return formatGenerateImageResult(result, width, height);
       }
       default:
         throw new Error(`Unknown tool: ${name}`);

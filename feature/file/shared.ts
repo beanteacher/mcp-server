@@ -11,19 +11,16 @@ export const CONSOLA = `${FONT_DIR}/consola.ttf`;
 
 // ── Types ──
 
-export interface ConvertResult {
-  outputPath: string;
-  sizeBytes: number;
-}
+import { FileDto } from './dto';
+export type ConvertResult = FileDto.ConvertResult;
+export type MdBlock = FileDto.MdBlock;
 
-export type MdBlock =
-  | { type: 'heading'; level: 1 | 2 | 3 | 4; text: string; bid: string }
-  | { type: 'paragraph'; text: string }
-  | { type: 'bullet'; text: string; level: number }
-  | { type: 'numbered'; num: string; text: string }
-  | { type: 'blockquote'; text: string }
-  | { type: 'code'; text: string }
-  | { type: 'table'; headers: string[]; rows: string[][] };
+// ── Formatters ──
+
+export function formatConvertResult(result: ConvertResult): string {
+  const sizeKB = (result.sizeBytes / 1024).toFixed(1);
+  return `변환 완료\n- 출력: ${result.outputPath}\n- 크기: ${sizeKB} KB`;
+}
 
 // ── Strip helpers ──
 
