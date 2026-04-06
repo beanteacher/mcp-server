@@ -19,9 +19,13 @@ describe('messageRetry', () => {
   });
 
   it('msgIds로 재발송 요청하면 UPDATE 후 처리 건수를 반환한다', async () => {
-    mockQuery.mockResolvedValue([
-      { msg_id: BigInt(1001), retry_count: 0 },
-    ]);
+    // SMS 테이블에서만 발견, 나머지 채널 빈 배열
+    mockQuery.mockImplementation((sql: string) => {
+      if (sql.includes('SMS_TRAN')) {
+        return Promise.resolve([{ msg_id: BigInt(1001), retry_count: 0 }]);
+      }
+      return Promise.resolve([]);
+    });
     mockExec.mockResolvedValue(1);
 
     const result = await messageRetry({ msgIds: ['1001'] });
@@ -31,9 +35,12 @@ describe('messageRetry', () => {
   });
 
   it('retry_count가 상한(3회)에 도달한 msgId는 경고를 반환한다', async () => {
-    mockQuery.mockResolvedValue([
-      { msg_id: BigInt(2001), retry_count: 3 },
-    ]);
+    mockQuery.mockImplementation((sql: string) => {
+      if (sql.includes('SMS_TRAN')) {
+        return Promise.resolve([{ msg_id: BigInt(2001), retry_count: 3 }]);
+      }
+      return Promise.resolve([]);
+    });
     mockExec.mockResolvedValue(0);
 
     const result = await messageRetry({ msgIds: ['2001'] });
@@ -43,10 +50,13 @@ describe('messageRetry', () => {
   });
 
   it('resultCode 조건으로 재발송 요청하면 해당 코드 실패 건이 처리된다', async () => {
-    mockQuery.mockResolvedValue([
-      { msg_id: BigInt(3001) },
-      { msg_id: BigInt(3002) },
-    ]);
+    // SMS 테이블에서만 2건 발견
+    mockQuery.mockImplementation((sql: string) => {
+      if (sql.includes('SMS_TRAN')) {
+        return Promise.resolve([{ msg_id: BigInt(3001) }, { msg_id: BigInt(3002) }]);
+      }
+      return Promise.resolve([]);
+    });
     mockExec.mockResolvedValue(2);
 
     const result = await messageRetry({

@@ -24,11 +24,11 @@ function setupWeeklyMocks({
     if (sql.includes('DATE(create_date)')) {
       return Promise.resolve(dailyRows);
     }
-    if (sql.includes('_channel') && sql.includes('message_state')) {
+    if (sql.includes('GROUP BY _channel')) {
       return Promise.resolve(channelRows);
     }
-    // prev week query
-    if (sql.includes('message_state') && sql.includes('GROUP BY message_state')) {
+    // prev week query: GROUP BY message_state (without _channel)
+    if (sql.includes('GROUP BY message_state')) {
       return Promise.resolve(prevRows);
     }
     return Promise.resolve([]);

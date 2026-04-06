@@ -19,10 +19,13 @@ describe('messageCancel', () => {
   });
 
   it('msgIds로 대기 상태(0) 건을 취소하면 취소 성공 건수를 반환한다', async () => {
-    // SMS 테이블에 1건 존재, 대기 상태로 취소 가능
+    // SMS 테이블에만 1건 존재, 나머지 채널 0건
     mockQuery.mockImplementation((sql: string) => {
-      if (sql.includes('COUNT(*)')) {
+      if (sql.includes('COUNT(*)') && sql.includes('SMS_TRAN')) {
         return Promise.resolve([{ cnt: BigInt(1) }]);
+      }
+      if (sql.includes('COUNT(*)')) {
+        return Promise.resolve([{ cnt: BigInt(0) }]);
       }
       return Promise.resolve([]);
     });
@@ -36,10 +39,13 @@ describe('messageCancel', () => {
   });
 
   it('이미 발송된 건(messageState != 0)은 취소 불가 건수에 포함된다', async () => {
-    // 테이블에 1건 존재하지만 UPDATE는 0건 (이미 발송)
+    // SMS 테이블에 1건 존재하지만 UPDATE는 0건 (이미 발송)
     mockQuery.mockImplementation((sql: string) => {
-      if (sql.includes('COUNT(*)')) {
+      if (sql.includes('COUNT(*)') && sql.includes('SMS_TRAN')) {
         return Promise.resolve([{ cnt: BigInt(1) }]);
+      }
+      if (sql.includes('COUNT(*)')) {
+        return Promise.resolve([{ cnt: BigInt(0) }]);
       }
       return Promise.resolve([]);
     });
@@ -53,8 +59,11 @@ describe('messageCancel', () => {
 
   it('groupId로 취소 요청하면 해당 그룹의 대기 건이 취소된다', async () => {
     mockQuery.mockImplementation((sql: string) => {
-      if (sql.includes('COUNT(*)')) {
+      if (sql.includes('COUNT(*)') && sql.includes('SMS_TRAN')) {
         return Promise.resolve([{ cnt: BigInt(5) }]);
+      }
+      if (sql.includes('COUNT(*)')) {
+        return Promise.resolve([{ cnt: BigInt(0) }]);
       }
       return Promise.resolve([]);
     });

@@ -90,11 +90,11 @@ describe('messageDiagnoseFailures', () => {
       if (sql.includes('HOUR(create_date)')) {
         return Promise.resolve([{ h: 9, cnt: BigInt(5) }, { h: 10, cnt: BigInt(5) }]);
       }
-      if (sql.includes('result_code') && sql.includes('GROUP BY')) {
-        return Promise.resolve([{ result_code: '4000', cnt: BigInt(5) }]);
-      }
-      if (sql.includes('result_net_id') && sql.includes('GROUP BY')) {
+      if (sql.includes('GROUP BY result_net_id')) {
         return Promise.resolve([{ result_net_id: 'KT', cnt: BigInt(90) }]);
+      }
+      if (sql.includes('GROUP BY result_code')) {
+        return Promise.resolve([{ result_code: '4000', cnt: BigInt(5) }]);
       }
       return Promise.resolve([{ total: BigInt(100) }]);
     });

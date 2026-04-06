@@ -28,10 +28,10 @@ function setupDailyMocks({
     if (sql.includes('HOUR(create_date)')) {
       return Promise.resolve(hourlyRows);
     }
-    if (sql.includes('result_code') && sql.includes('GROUP BY')) {
+    if (sql.includes('GROUP BY result_code')) {
       return Promise.resolve(failCodeRows);
     }
-    if (sql.includes('_channel') && sql.includes('message_state')) {
+    if (sql.includes('GROUP BY _channel')) {
       return Promise.resolve(channelRows);
     }
     return Promise.resolve([]);

@@ -1,6 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
-// result-code-explain은 DB를 사용하지 않으므로 prisma mock 불필요
+// shared.ts가 @/lib/prisma를 import하므로 mock 필요
+vi.mock('@/lib/prisma', () => ({
+  prisma: {},
+}));
+
 import { messageResultCodeExplain } from '../result-code-explain.service';
 
 describe('messageResultCodeExplain', () => {
