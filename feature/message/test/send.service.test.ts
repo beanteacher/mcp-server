@@ -18,7 +18,7 @@ vi.mock('@/lib/prisma', () => {
   };
 });
 
-import { messageSend } from './send.service';
+import { messageSend } from '../send.service';
 import { prisma } from '@/lib/prisma'; // used in mock verification
 
 describe('messageSend', () => {

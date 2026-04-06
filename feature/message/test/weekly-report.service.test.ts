@@ -7,7 +7,7 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-import { messageWeeklyReport } from './weekly-report.service';
+import { messageWeeklyReport } from '../weekly-report.service';
 import { prisma } from '@/lib/prisma';
 
 const mockQuery = prisma.$queryRawUnsafe as ReturnType<typeof vi.fn>;

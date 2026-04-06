@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
-import { analyzeConfig } from './analyze-config.service';
-import { makeTmpDir, writeAgentFixtures } from './test-helpers';
+import { analyzeConfig } from '../analyze-config.service';
+import { makeTmpDir, writeAgentFixtures } from '../test-helpers';
 
 describe('analyzeConfig', () => {
   let tmpDir: string;

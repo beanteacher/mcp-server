@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { writeFile, readFile, unlink } from 'fs/promises';
-import { mdToPdf } from './md-to-pdf.service';
+import { mdToPdf } from '../md-to-pdf.service';
 
 // ── mdToPdf (통합) ──
 

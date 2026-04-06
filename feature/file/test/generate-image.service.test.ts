@@ -3,7 +3,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { unlink, stat } from 'fs/promises';
 import sharp from 'sharp';
-import { generateImage } from './generate-image.service';
+import { generateImage } from '../generate-image.service';
 
 // ── generateImage (통합) ──
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
-import { diagnose } from './diagnose.service';
-import { makeTmpDir, writeAgentFixtures } from './test-helpers';
+import { diagnose } from '../diagnose.service';
+import { makeTmpDir, writeAgentFixtures } from '../test-helpers';
 
 describe('diagnose', () => {
   let tmpDir: string;

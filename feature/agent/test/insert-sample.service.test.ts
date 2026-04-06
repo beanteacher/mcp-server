@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { insertSample } from './insert-sample.service';
+import { insertSample } from '../insert-sample.service';
 
 // Mock dynamic imports
 vi.mock('mysql2/promise', () => ({

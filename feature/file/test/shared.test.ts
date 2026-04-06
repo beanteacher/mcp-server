@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { slugify, parseMd } from './shared';
+import { slugify, parseMd } from '../shared';
 
 // ── slugify ──
 
